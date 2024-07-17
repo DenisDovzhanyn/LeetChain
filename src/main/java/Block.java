@@ -9,6 +9,8 @@ public class Block implements Serializable {
     private String answer;
     private int nonce;
     private int difficulty = 5;
+    public int blockNumber = 0;
+
 
 
     public Block(String previousHash, String answer, String question){
@@ -17,6 +19,9 @@ public class Block implements Serializable {
         this.previousHash = previousHash;
         this.timeStamp = new Date().getTime();
         this.hash = calHash();
+        this.blockNumber = blockNumber;
+        blockNumber++;
+
     }
 
     public Block(){

@@ -16,32 +16,6 @@ public class LeetChain {
        // System.out.println(isChainValid());
     }
 
-   /* public static boolean isChainValid(){
-        Block previous;
-        Block current;
 
-        for(int i = 1; i < chain.size(); i++){
 
-            current = chain.get(i);
-            previous = chain.get(i -1);
-
-            if(!previous.hash.equals(current.previousHash)){
-                System.out.println("previous hash tampered: ");
-                System.out.println(previous.hash);
-                System.out.println(current.previousHash);
-                return false;
-            }
-
-            if(!current.hash.equals(current.calHash())){
-                System.out.println("current hash tampered");
-                System.out.println(current.hash);
-                System.out.println(current.calHash());
-                return false;
-            }
-
-        }
-        return true;
-    }
-
-    */
 }
