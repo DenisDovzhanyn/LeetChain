@@ -15,3 +15,4 @@ The primary goals of this project are:
 - **Block Structure**: Each block contains a set of transactions (LeetCode questions and answers).
 - **Proof of Work**: Implementing a basic Proof of Work (PoW) algorithm for block validation.
 - **Decentralized Ledger**: Simulate a decentralized ledger where each node can add new blocks to the chain.
+Persistence: Data persistence using files or a database.
