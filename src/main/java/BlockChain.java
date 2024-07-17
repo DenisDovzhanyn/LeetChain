@@ -1,7 +1,10 @@
 import java.util.ArrayList;
-
+import java.util.Queue;
+import org.apache.commons.collections4.queue.CircularFifoQueue;
 public class BlockChain {
-    private ArrayList<Block> blockChain = new ArrayList<Block>();
+
+    // Only stores the 20 most recent blocks
+    private CircularFifoQueue<Block> blockChain = new CircularFifoQueue<Block>(20);
 
     public BlockChain(){
 

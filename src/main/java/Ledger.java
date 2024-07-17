@@ -1,6 +1,6 @@
+import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
-import org.rocksdb.Options;
 
 import java.io.*;
 
@@ -55,5 +55,9 @@ public class Ledger {
         }
         System.out.println(gottenBlock.hash + " " + gottenBlock.previousHash);
         return gottenBlock;
+    }
+
+    public void generateList(){
+
     }
 }

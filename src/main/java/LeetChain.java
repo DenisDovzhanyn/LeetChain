@@ -7,7 +7,7 @@ public class LeetChain {
         BlockChain chain = new BlockChain();
 
 
-        chain.add(new Block("0","HELP ME IM GOING TO DIE","for int i = 0"));
+        //chain.add(new Block("0","HELP ME IM GOING TO DIE","for int i = 0"));
         //chain.get(0).mineBlock();
 
         //chain.add(new Block(chain.get(chain.size()-1).hash, "LOLOL", "hmmm idk"));
