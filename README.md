@@ -1,8 +1,8 @@
-# LeetCode Blockchain
+# LeetChain
 
 ## Overview
 
-The LeetCode Blockchain project is an experimental blockchain implementation where transactions consist of LeetCode questions and their corresponding answers. This project aims to explore blockchain technology while utilizing familiar content from LeetCode to create a unique learning experience.
+The LeetChain project is an experimental blockchain implementation where transactions consist of LeetCode questions and their corresponding answers. This project aims to explore blockchain technology while utilizing familiar content from LeetCode to create a unique learning experience.
 ## Motivation
 
 The primary goals of this project are:
