@@ -1,13 +1,14 @@
-import java.security.MessageDigest;
+import java.io.Serializable;
 import java.util.Date;
 
-public class Block {
+public class Block implements Serializable {
     public String hash;
     public String previousHash;
     private long timeStamp;
     private String question;
     private String answer;
     private int nonce;
+    private int difficulty = 5;
 
 
     public Block(String previousHash, String answer, String question){
@@ -18,21 +19,29 @@ public class Block {
         this.hash = calHash();
     }
 
+    public Block(){
+
+    }
+
+
     public String calHash(){
-        String calculatedHash = Hasher.hash(previousHash + Long.toString(timeStamp) + question + answer + Integer.toString(nonce));
+        String calculatedHash = Hasher.hash(previousHash + Long.toString(timeStamp) + question + answer
+                + Integer.toString(difficulty) + Integer.toString(nonce));
 
         return calculatedHash;
     }
 
-    public void mineBlock(int difficulty){
+    public void mineBlock(){
         String targetHash = new String(new char[difficulty]).replace('\0', '0');
         while(!hash.substring(0,difficulty).equals(targetHash)){
             nonce++;
             hash = calHash();
+            System.out.println(hash);
         }
 
-        System.out.println("Nice you've mined a block");
+        System.out.println("Nice you've mined a block: " + hash );
     }
+
 
 
 }
