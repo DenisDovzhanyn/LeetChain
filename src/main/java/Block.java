@@ -8,19 +8,20 @@ public class Block implements Serializable {
     private String question;
     private String answer;
     private int nonce;
-    private int difficulty = 5;
+    private int difficulty = 2;
     public int blockNumber = 0;
 
 
 
-    public Block(String previousHash, String answer, String question){
+
+    public Block(String previousHash, String answer, String question, int blockNumber){
         this.question = question;
         this.answer = answer;
         this.previousHash = previousHash;
         this.timeStamp = new Date().getTime();
         this.hash = calHash();
         this.blockNumber = blockNumber;
-        blockNumber++;
+
 
     }
 
@@ -44,7 +45,8 @@ public class Block implements Serializable {
             System.out.println(hash);
         }
 
-        System.out.println("Nice you've mined a block: " + hash );
+        System.out.println("Nice you've mined a block: " + hash);
+
     }
 
 

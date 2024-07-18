@@ -6,9 +6,25 @@
   <component name="ChangeListManager">
     <list default="true" id="e29ebfb5-654f-41f7-a4b6-93910a8cacb1" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeetChain/000012.sst" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeetChain/000013.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeetChain/CURRENT" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeetChain/IDENTITY" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeetChain/LOCK" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeetChain/LOG" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeetChain/LOG.old.1721249871849451" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeetChain/LOG.old.1721250477761306" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeetChain/MANIFEST-000014" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeetChain/OPTIONS-000011" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeetChain/OPTIONS-000016" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/Block.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/Block.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/BlockChain.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/BlockChain.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/Ledger.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/Ledger.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/LeetChain.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/LeetChain.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/Block.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/Block.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/BlockChain.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/BlockChain.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/Ledger.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/Ledger.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/LeetChain.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/LeetChain.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -49,7 +65,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "Application.LeetChain.executor": "Run",
+    "Application.LeetChain.executor": "Debug",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "git-widget-placeholder": "main",
@@ -85,5 +101,40 @@
       <updated>1721189687184</updated>
     </task>
     <servers />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <breakpoint enabled="true" type="java-exception">
+          <properties class="java.io.InvalidClassException" package="java.io" />
+          <option name="timeStamp" value="1" />
+        </breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/LeetChain.java</url>
+          <line>15</line>
+          <option name="timeStamp" value="16" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/LeetChain.java</url>
+          <line>17</line>
+          <option name="timeStamp" value="17" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/Ledger.java</url>
+          <line>52</line>
+          <option name="timeStamp" value="18" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/Ledger.java</url>
+          <line>59</line>
+          <option name="timeStamp" value="19" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/Ledger.java</url>
+          <line>60</line>
+          <option name="timeStamp" value="20" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

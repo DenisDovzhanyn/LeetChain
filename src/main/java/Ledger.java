@@ -1,6 +1,8 @@
+import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
+import org.rocksdb.RocksIterator;
 
 import java.io.*;
 
@@ -41,7 +43,7 @@ public class Ledger {
     }
 
     public Block getBlock(String key){
-        Block gottenBlock = new Block();
+        Block gottenBlock = null;
         try{
             byte[] blockBytes = db.get(key.getBytes());
 
@@ -49,15 +51,40 @@ public class Ledger {
                 ByteArrayInputStream byteInput = new ByteArrayInputStream(blockBytes);
                 ObjectInputStream ois = new ObjectInputStream(byteInput);
                  gottenBlock = (Block) ois.readObject();
+            } else{
+                System.out.println("ITS NULL ITS NULL ITS NULL ITS NULL ITS NULL ITS NULL");
             }
         } catch (IOException | RocksDBException | ClassNotFoundException f){
             throw new RuntimeException("error getting block OR block doesnt exist",f);
         }
-        System.out.println(gottenBlock.hash + " " + gottenBlock.previousHash);
+        System.out.println(gottenBlock != null ? gottenBlock.hash + " " + gottenBlock.previousHash : "Block not found for key: " + key);
         return gottenBlock;
     }
 
-    public void generateList(){
+    public CircularFifoQueue<Block> generateList(){
+        CircularFifoQueue<Block> list = new CircularFifoQueue<Block>(20);
+        try(RocksIterator iterator = db.newIterator()){
+            for(iterator.seekToFirst(); iterator.isValid(); iterator.next()){
+                byte[] value = iterator.value();
+                if(value != null) {
+                    Block block = deserialize(value);
+                    list.add(block);
+                }
+            }
+            return list;
+        } catch (Exception e){
+            throw new RuntimeException("error building list", e);
+        }
 
+    }
+
+    public Block deserialize(byte[] value){
+        try(ByteArrayInputStream bytArray = new ByteArrayInputStream(value);
+            ObjectInputStream ois = new ObjectInputStream(bytArray)){
+            Block block = (Block) ois.readObject();
+            return block;
+        } catch(IOException | ClassNotFoundException e ){
+            throw new RuntimeException("error deserializing", e);
+        }
     }
 }

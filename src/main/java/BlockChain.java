@@ -4,25 +4,29 @@ import org.apache.commons.collections4.queue.CircularFifoQueue;
 public class BlockChain {
 
     // Only stores the 20 most recent blocks
-    private CircularFifoQueue<Block> blockChain = new CircularFifoQueue<Block>(20);
+    private static CircularFifoQueue<Block> blockChain = new CircularFifoQueue<Block>(20);
 
     public BlockChain(){
-
+        Ledger.getInstance();
+        blockChain = Ledger.getInstance().generateList();
     }
+
     public void add(Block block){
-        if(!checkIfBlockExist(block) && isChainValid()) Ledger.getInstance().addBlock(block,Integer.toString(block.blockNumber));
+        if(!checkIfBlockExist(block) && isChainValid() || !checkIfBlockExist(block) && blockChain.size() == 1){
+            Ledger.getInstance().addBlock(block, Integer.toString(block.blockNumber));
+            blockChain.add(block);
 
-
+        }
     }
 
     public boolean checkIfBlockExist(Block block){
-        if(Ledger.getInstance().getBlock(Integer.toString(block.blockNumber)) != null) return true;
-        return false;
+        if(Ledger.getInstance().getBlock(Integer.toString(block.blockNumber)) == null) return false;
+        return true;
     }
+
     public boolean isChainValid(){
         Block previous;
         Block current;
-
         for(int i = 1; i < blockChain.size(); i++){
 
             current = blockChain.get(i);
@@ -44,5 +48,17 @@ public class BlockChain {
 
         }
         return true;
+    }
+
+
+    public CircularFifoQueue<Block> getBlockChain() {
+        return blockChain;
+    }
+
+    public Block getPrevious(){
+        if (blockChain.isEmpty()) {
+            return null;  // Return null if blockChain is empty
+        }
+        return blockChain.get(blockChain.size()-1);
     }
 }
