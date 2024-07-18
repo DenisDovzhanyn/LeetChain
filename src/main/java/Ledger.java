@@ -55,9 +55,8 @@ public class Ledger {
                 System.out.println("ITS NULL ITS NULL ITS NULL ITS NULL ITS NULL ITS NULL");
             }
         } catch (IOException | RocksDBException | ClassNotFoundException f){
-            throw new RuntimeException("error getting block OR block doesnt exist",f);
+            throw new RuntimeException("error getting block",f);
         }
-        System.out.println(gottenBlock != null ? gottenBlock.hash + " " + gottenBlock.previousHash : "Block not found for key: " + key);
         return gottenBlock;
     }
 

@@ -8,7 +8,7 @@ public class Block implements Serializable {
     private String question;
     private String answer;
     private int nonce;
-    private int difficulty = 2;
+    private int difficulty = 3;
     public int blockNumber = 0;
 
 

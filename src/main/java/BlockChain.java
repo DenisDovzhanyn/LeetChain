@@ -61,4 +61,8 @@ public class BlockChain {
         }
         return blockChain.get(blockChain.size()-1);
     }
+
+    public Block getByIndexOfList(int index){
+        return blockChain.get(index);
+    }
 }
