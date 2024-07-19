@@ -42,7 +42,7 @@ public class Ledger {
         }
     }
 
-    public Block getBlock(String key){
+    public Block getBlockByKey(String key){
         Block gottenBlock = null;
         try{
             byte[] blockBytes = db.get(key.getBytes());

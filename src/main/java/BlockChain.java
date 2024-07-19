@@ -1,5 +1,3 @@
-import java.util.ArrayList;
-import java.util.Queue;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 public class BlockChain {
 
@@ -20,7 +18,7 @@ public class BlockChain {
     }
 
     public boolean checkIfBlockExist(Block block){
-        if(Ledger.getInstance().getBlock(Integer.toString(block.blockNumber)) == null) return false;
+        if(Ledger.getInstance().getBlockByKey(Integer.toString(block.blockNumber)) == null) return false;
         return true;
     }
 
