@@ -68,12 +68,17 @@ public class BlockChain {
     }
 
     public int calculateDifficulty(){
+        int avg = 0;
 
-        if(blockChain.size() >= 2) {
-            if (getPrevious().getTimeStamp() - getByIndexOfList(blockChain.size() - 2).getTimeStamp() > 660000)
-                return getPrevious().getDifficulty() - 1;
-            if (getPrevious().getDifficulty() < 540000)
-                return getPrevious().getDifficulty() + 1;
+        if(blockChain.size() == 20) {
+            for(Block block : blockChain){
+                avg += block.getTimeStamp();
+            }
+
+            if(avg % blockChain.size() == 0){
+                if(avg > 660000) return getPrevious().getDifficulty() - 1;
+                if(avg < 540000) return getPrevious().getDifficulty() + 1;
+            }
         }
             return getPrevious().getDifficulty();
 
