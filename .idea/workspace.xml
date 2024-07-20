@@ -5,17 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e29ebfb5-654f-41f7-a4b6-93910a8cacb1" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeetChain/000004.log" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeetChain/CURRENT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeetChain/IDENTITY" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeetChain/LOCK" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeetChain/LOG" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeetChain/MANIFEST-000005" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/LeetChain/OPTIONS-000007" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/Block.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/Block.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/BlockChain.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/BlockChain.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/Ledger.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/Ledger.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/LeetChain.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/LeetChain.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/Block.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/Block.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/BlockChain.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/BlockChain.class" afterDir="false" />
@@ -59,20 +52,20 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Application.LeetChain.executor&quot;: &quot;Debug&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/gamer/Desktop/LeetChain/lib/commons-collections4-4.5.0-M2.jar&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;editor.preferences.import&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.LeetChain.executor": "Debug",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "git-widget-placeholder": "difficultyscaling",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/gamer/Desktop/LeetChain/lib/commons-collections4-4.5.0-M2.jar",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "editor.preferences.import"
   }
-}</component>
+}]]></component>
   <component name="RunManager">
     <configuration name="LeetChain" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="LeetChain" />
@@ -107,23 +100,8 @@
         </breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/LeetChain.java</url>
-          <line>12</line>
+          <line>20</line>
           <option name="timeStamp" value="2" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/LeetChain.java</url>
-          <line>15</line>
-          <option name="timeStamp" value="3" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/LeetChain.java</url>
-          <line>16</line>
-          <option name="timeStamp" value="4" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/LeetChain.java</url>
-          <line>9</line>
-          <option name="timeStamp" value="5" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
