@@ -14,13 +14,14 @@ public class Block implements Serializable {
 
 
 
-    public Block(String previousHash, String answer, String question, int blockNumber){
+    public Block(String previousHash, String answer, String question, int blockNumber, int difficulty){
         this.question = question;
         this.answer = answer;
         this.previousHash = previousHash;
         this.timeStamp = new Date().getTime();
         this.hash = calHash();
         this.blockNumber = blockNumber;
+        this.difficulty = difficulty;
 
 
     }
@@ -49,6 +50,11 @@ public class Block implements Serializable {
 
     }
 
+    public long getTimeStamp() {
+        return timeStamp;
+    }
 
-
+    public int getDifficulty() {
+        return difficulty;
+    }
 }
