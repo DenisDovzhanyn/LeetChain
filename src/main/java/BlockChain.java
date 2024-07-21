@@ -1,7 +1,5 @@
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 
-import java.sql.Timestamp;
-
 public class BlockChain {
 
     // Only stores the 20 most recent blocks
@@ -68,17 +66,13 @@ public class BlockChain {
     }
 
     public int calculateDifficulty(){
-        int avg = 0;
+        if(getPrevious().blockNumber % 19 == 0) {
+            long expectedTime = 19 * (10 * 60 * 1000);
+            long actualTime = getPrevious().getTimeStamp() - getByIndexOfList(0).getTimeStamp();
+            int newDifficulty = Math.round((expectedTime / actualTime) * getPrevious().getDifficulty());
+            if(newDifficulty < 40) return 40;
 
-        if(blockChain.size() == 20) {
-            for(Block block : blockChain){
-                avg += block.getTimeStamp();
-            }
 
-            if(avg % blockChain.size() == 0){
-                if(avg > 660000) return getPrevious().getDifficulty() - 1;
-                if(avg < 540000) return getPrevious().getDifficulty() + 1;
-            }
         }
             return getPrevious().getDifficulty();
 

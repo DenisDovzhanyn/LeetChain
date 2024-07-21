@@ -6,8 +6,9 @@ public class LeetChain {
     public static void main(String[] args){
         BlockChain chain = new BlockChain();
         Block block;
+
         if(chain.getBlockChain().isEmpty()) {
-            block = new Block("genesis","hello","question",0, 5);
+            block = new Block("genesis","hello","question",1, 300000);
             block.mineBlock();
             chain.add(block);
 
