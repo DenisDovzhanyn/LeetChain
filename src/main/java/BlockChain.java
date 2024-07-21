@@ -18,11 +18,13 @@ public class BlockChain {
         }
     }
 
+    //checking if the block is already present on rocksDB
     public boolean checkIfBlockExist(Block block){
         if(Ledger.getInstance().getBlockByKey(Integer.toString(block.blockNumber)) == null) return false;
         return true;
     }
 
+    // checks current and previous blocks hash to make sure they match up, prevents tampering
     public boolean isChainValid(){
         Block previous;
         Block current;
@@ -65,12 +67,14 @@ public class BlockChain {
         return blockChain.get(index);
     }
 
+
+    //difficulty is calculated every 19 blocks, difficulty can grow or shrink exponentially depending on how fast blocks were mined
     public int calculateDifficulty(){
         if(getPrevious().blockNumber % 19 == 0) {
             long expectedTime = 19 * (10 * 60 * 1000);
             long actualTime = getPrevious().getTimeStamp() - getByIndexOfList(0).getTimeStamp();
             int newDifficulty = Math.round((expectedTime / actualTime) * getPrevious().getDifficulty());
-            if(newDifficulty < 40) return 40;
+            return newDifficulty;
 
 
         }

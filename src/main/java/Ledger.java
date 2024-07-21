@@ -10,6 +10,7 @@ public class Ledger {
     private static Ledger instance;
     private RocksDB db;
 
+    //loads db and assigns it to db variable
     public Ledger(){
         RocksDB.loadLibrary();
         Options options = new Options().setCreateIfMissing(true);
@@ -20,14 +21,14 @@ public class Ledger {
         }
     }
 
-
+    // allows us to have the db always open
     public static Ledger getInstance(){
         if(instance == null) instance = new Ledger();
 
         return instance;
 
     }
-
+    // serializes block and adds it to rocksDB, key will be block number
     public void addBlock(Block block, String key){
         try{
             ByteArrayOutputStream bytArray = new ByteArrayOutputStream();
@@ -42,24 +43,24 @@ public class Ledger {
         }
     }
 
+    // returns and deserializes block, returning null if no block was found/doesnt exist
     public Block getBlockByKey(String key){
         Block gottenBlock = null;
         try{
             byte[] blockBytes = db.get(key.getBytes());
 
             if(blockBytes != null){
-                ByteArrayInputStream byteInput = new ByteArrayInputStream(blockBytes);
-                ObjectInputStream ois = new ObjectInputStream(byteInput);
-                 gottenBlock = (Block) ois.readObject();
+                 gottenBlock = deserialize(blockBytes);
             } else{
                 System.out.println("ITS NULL ITS NULL ITS NULL ITS NULL ITS NULL ITS NULL");
             }
-        } catch (IOException | RocksDBException | ClassNotFoundException f){
+        } catch (RocksDBException f){
             throw new RuntimeException("error getting block",f);
         }
         return gottenBlock;
     }
 
+    //uses circularfifoqueue to generate a list when program starts that holds the 20 latest blocks
     public CircularFifoQueue<Block> generateList(){
         CircularFifoQueue<Block> list = new CircularFifoQueue<Block>(20);
         try(RocksIterator iterator = db.newIterator()){

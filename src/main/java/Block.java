@@ -40,13 +40,12 @@ public class Block implements Serializable {
     }
 
     public void mineBlock(){
-        BigInteger targetHash = (new BigInteger("16")).pow(64).divide(BigInteger.valueOf(difficulty)).subtract(BigInteger.valueOf(1));
-        BigInteger actual = null;
+        BigInteger hashValue = null;
 
-        while(!isHashFound(actual)){
+        while(!isHashFound(hashValue)){
             nonce++;
             hash = calHash();
-            actual = new BigInteger(hash, 16);
+            hashValue = new BigInteger(hash, 16);
             System.out.println(hash);
 
         }
