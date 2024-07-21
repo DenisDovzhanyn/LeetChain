@@ -1,4 +1,5 @@
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.util.Date;
 
 public class Block implements Serializable {
@@ -8,8 +9,8 @@ public class Block implements Serializable {
     private String question;
     private String answer;
     private int nonce;
-    private int difficulty = 3;
-    public int blockNumber = 0;
+    private int difficulty = 1;
+    public int blockNumber = 1;
 
 
 
@@ -39,15 +40,34 @@ public class Block implements Serializable {
     }
 
     public void mineBlock(){
-        String targetHash = new String(new char[difficulty]).replace('\0', '0');
-        while(!hash.substring(0,difficulty).equals(targetHash)){
+        BigInteger targetHash = (new BigInteger("16")).pow(64).divide(BigInteger.valueOf(difficulty)).subtract(BigInteger.valueOf(1));
+        BigInteger actual = null;
+
+        while(!isHashFound(actual)){
             nonce++;
             hash = calHash();
+            actual = new BigInteger(hash, 16);
             System.out.println(hash);
+
         }
 
         System.out.println("Nice you've mined a block: " + hash);
 
+    }
+
+    public boolean isHashFound(BigInteger actual){
+
+        if(actual == null) return false;
+        if(actual.compareTo(calcTarget()) == -1) return true;
+
+        return false;
+    }
+
+    public BigInteger calcTarget(){
+        return (new BigInteger("16"))
+                .pow(64)
+                .divide(BigInteger.valueOf(difficulty))
+                .subtract(BigInteger.valueOf(1));
     }
 
     public long getTimeStamp() {
