@@ -7,6 +7,7 @@ public class LeetChain {
         BlockChain chain = new BlockChain();
         Block block;
 
+        Wallet wallet = new Wallet();
         if(chain.getBlockChain().isEmpty()) {
             block = new Block("genesis","hello","question",1, 300000);
             block.mineBlock();

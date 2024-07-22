@@ -46,6 +46,7 @@ public class Block implements Serializable {
             nonce++;
             hash = calHash();
             hashValue = new BigInteger(hash, 16);
+
             System.out.println(hash);
 
         }

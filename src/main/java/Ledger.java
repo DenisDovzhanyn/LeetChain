@@ -15,7 +15,7 @@ public class Ledger {
         RocksDB.loadLibrary();
         Options options = new Options().setCreateIfMissing(true);
         try {
-            this.db = RocksDB.open(options, "LeetChain");
+            this.db = RocksDB.open(options, "DataBase");
         } catch (RocksDBException e) {
             throw new RuntimeException("Error opening RocksDB", e);
         }
