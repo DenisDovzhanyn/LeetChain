@@ -13,7 +13,7 @@ public class Ledger {
     private RocksDB db;
 
     //loads db and assigns it to db variable
-    public Ledger(){
+    public Ledger() {
         RocksDB.loadLibrary();
         Options options = new Options().setCreateIfMissing(true);
         try {
@@ -24,8 +24,8 @@ public class Ledger {
     }
 
     // allows us to have the db always open
-    public static Ledger getInstance(){
-        if(instance == null) instance = new Ledger();
+    public static Ledger getInstance() {
+        if (instance == null) instance = new Ledger();
 
         return instance;
 
@@ -34,8 +34,8 @@ public class Ledger {
     // REMINDER WE NEED TO CHANGE THE KEY TO BE THE BLOCKS HASH AND ADD A NEW ENTRY IN DB WITH KEY LATESTHASH THAT HOLDS
     //  THE VALUE OF THE LATEST HASH, SO WE CAN USE THAT HASH VALUE TO FIND THE ACTUAL ENTRY FOR THE LATEST BLOCK
     // serializes block and adds it to rocksDB, key will be block number
-    public void addBlock(Block block, String key){
-        try{
+    public void addBlock(Block block, String key) {
+        try {
             ByteArrayOutputStream bytArray = new ByteArrayOutputStream();
             ObjectOutputStream obs = new ObjectOutputStream(bytArray);
             obs.writeObject(block);
@@ -47,26 +47,23 @@ public class Ledger {
 
             db.put(keyBytes, blockBytes);
             db.put(latestBlockHashKey,latestBlockHash);
-
-        }catch (IOException | RocksDBException e){
+        } catch (IOException | RocksDBException e){
             throw new RuntimeException("error adding to db", e);
         }
     }
 
     // returns and deserializes block, returning null if no block was found/doesnt exist
-    public Block getBlockByKey(String key){
+    public Block getBlockByKey(String key) {
         Block gottenBlock = null;
         try{
             byte[] blockBytes = db.get(key.getBytes());
 
-            if(blockBytes != null){
-                 gottenBlock = deserialize(blockBytes);
-            } else{
-                System.out.println("ITS NULL ITS NULL ITS NULL ITS NULL ITS NULL ITS NULL");
-            }
-        } catch (RocksDBException f){
+            if(blockBytes != null) gottenBlock = deserialize(blockBytes);
+
+        } catch (RocksDBException f) {
             throw new RuntimeException("error getting block",f);
         }
+
         return gottenBlock;
     }
 
@@ -77,38 +74,36 @@ public class Ledger {
         String previousHash = "";
         String latestBlockHashKey = "latestBlockHash";
 
-            try {
-                for (int i = 0; i < 20; i++) {
-                    byte[] value;
+        try {
+            for (int i = 0; i < 20; i++) {
+                byte[] value = null;
 
-                    if (i == 0){
-
-                        byte[] latestHash = db.get(latestBlockHashKey.getBytes());
-                        value = db.get(latestHash);
-
-                    } else {
-                        value = db.get(previousHash.getBytes());
-                    }
-
-                    if(value != null) {
-                        Block block = deserialize(value);
-                        previousHash = block.previousHash;
-                        beforeFifoQueue.add(0, block);
-
-                    }
+                if (i == 0) {
+                    byte[] latestHash = db.get(latestBlockHashKey.getBytes());
+                    if(latestHash != null) value = db.get(latestHash);
+                } else {
+                    value = db.get(previousHash.getBytes());
                 }
 
-                list.addAll(beforeFifoQueue);
-            } catch (RocksDBException e){
-                throw new RuntimeException("error generating list", e);
+                if (value != null) {
+                    Block block = deserialize(value);
+                    previousHash = block.previousHash;
+                    beforeFifoQueue.add(0, block);
+                }
             }
-            return list;
+            list.addAll(beforeFifoQueue);
+        } catch (RocksDBException e){
+            throw new RuntimeException("error generating list", e);
+        }
+
+        return list;
     }
 
     public Block deserialize(byte[] value){
         try(ByteArrayInputStream bytArray = new ByteArrayInputStream(value);
             ObjectInputStream ois = new ObjectInputStream(bytArray)){
             Block block = (Block) ois.readObject();
+
             return block;
         } catch(IOException | ClassNotFoundException e ){
             throw new RuntimeException("error deserializing", e);

@@ -10,7 +10,7 @@ public class LeetChain {
         Wallet wallet = new Wallet();
 
         if(chain.getBlockChain().isEmpty()) {
-            block = new Block("genesis","hello","question",1, 300000);
+            block = new Block("genesis","hello","question",1, 3000000);
             block.mineBlock();
             chain.add(block);
 
