@@ -34,15 +34,17 @@ public class Wallet {
         // we use Base32 instead of Base64 because 64 uses / which can cause problems when creating files
     public void writeKeyToFile(PublicKey publicKey, PrivateKey privateKey){
         try{
-            byte[] bytes = publicKey.getEncoded();
-            String path = "Keys/" + Base32.toBase32String(bytes);
+            byte[] publicEncoded = publicKey.getEncoded();
+            byte[] privateEncoded = privateKey.getEncoded();
+            String path = "Keys/" + Base32.toBase32String(publicEncoded);
 
             File keyPair = new File(path);
             keyPair.createNewFile();
 
             PrintWriter writer = new PrintWriter(keyPair);
-            writer.println(privateKey.toString());
+            writer.println(Base32.toBase32String(privateEncoded));
             writer.close();
+
         } catch(IOException e){
             throw new RuntimeException("Error writing key to file", e);
         }

@@ -12,7 +12,8 @@ public class BlockChain {
 
     public void add(Block block){
         if(!checkIfBlockExist(block) && isChainValid() || !checkIfBlockExist(block) && blockChain.size() == 1){
-            Ledger.getInstance().addBlock(block, Integer.toString(block.blockNumber));
+            System.out.println("adding block" + block.blockNumber + " to chain");
+            Ledger.getInstance().addBlock(block, block.hash);
             blockChain.add(block);
 
         }

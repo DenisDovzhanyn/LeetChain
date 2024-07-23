@@ -5,6 +5,8 @@ import org.rocksdb.RocksDBException;
 import org.rocksdb.RocksIterator;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Ledger {
     private static Ledger instance;
@@ -28,15 +30,23 @@ public class Ledger {
         return instance;
 
     }
+
+    // REMINDER WE NEED TO CHANGE THE KEY TO BE THE BLOCKS HASH AND ADD A NEW ENTRY IN DB WITH KEY LATESTHASH THAT HOLDS
+    //  THE VALUE OF THE LATEST HASH, SO WE CAN USE THAT HASH VALUE TO FIND THE ACTUAL ENTRY FOR THE LATEST BLOCK
     // serializes block and adds it to rocksDB, key will be block number
     public void addBlock(Block block, String key){
         try{
             ByteArrayOutputStream bytArray = new ByteArrayOutputStream();
             ObjectOutputStream obs = new ObjectOutputStream(bytArray);
             obs.writeObject(block);
+
             byte[] blockBytes = bytArray.toByteArray();
             byte[] keyBytes = key.getBytes();
+            byte[] latestBlockHashKey = "latestBlockHash".getBytes();
+            byte[] latestBlockHash = block.hash.getBytes();
+
             db.put(keyBytes, blockBytes);
+            db.put(latestBlockHashKey,latestBlockHash);
 
         }catch (IOException | RocksDBException e){
             throw new RuntimeException("error adding to db", e);
@@ -63,19 +73,36 @@ public class Ledger {
     //uses circularfifoqueue to generate a list when program starts that holds the 20 latest blocks
     public CircularFifoQueue<Block> generateList(){
         CircularFifoQueue<Block> list = new CircularFifoQueue<Block>(20);
-        try(RocksIterator iterator = db.newIterator()){
-            for(iterator.seekToFirst(); iterator.isValid(); iterator.next()){
-                byte[] value = iterator.value();
-                if(value != null) {
-                    Block block = deserialize(value);
-                    list.add(block);
+        List<Block> beforeFifoQueue = new ArrayList<Block>();
+        String previousHash = "";
+        String latestBlockHashKey = "latestBlockHash";
+
+            try {
+                for (int i = 0; i < 20; i++) {
+                    byte[] value;
+
+                    if (i == 0){
+
+                        byte[] latestHash = db.get(latestBlockHashKey.getBytes());
+                        value = db.get(latestHash);
+
+                    } else {
+                        value = db.get(previousHash.getBytes());
+                    }
+
+                    if(value != null) {
+                        Block block = deserialize(value);
+                        previousHash = block.previousHash;
+                        beforeFifoQueue.add(0, block);
+
+                    }
                 }
+
+                list.addAll(beforeFifoQueue);
+            } catch (RocksDBException e){
+                throw new RuntimeException("error generating list", e);
             }
             return list;
-        } catch (Exception e){
-            throw new RuntimeException("error building list", e);
-        }
-
     }
 
     public Block deserialize(byte[] value){
@@ -87,4 +114,6 @@ public class Ledger {
             throw new RuntimeException("error deserializing", e);
         }
     }
+
+
 }
