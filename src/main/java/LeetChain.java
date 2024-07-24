@@ -1,3 +1,5 @@
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.ArrayList;
 
 
@@ -8,6 +10,9 @@ public class LeetChain {
         Block block;
 
         Wallet wallet = new Wallet();
+        PublicKey key = wallet.getPublicByIndex(0);
+        PrivateKey test = wallet.getPrivateFromPublic(key);
+        System.out.println(test.toString());
 /*
         if(chain.getBlockChain().isEmpty()) {
             block = new Block("genesis","hello","question",1, 3000000);

@@ -7,11 +7,12 @@ import java.io.PrintWriter;
 import java.security.*;
 import java.security.spec.ECGenParameterSpec;
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
+
 
 public class Wallet {
     private List<PublicKey> publicKeys = new ArrayList<PublicKey>();
@@ -21,7 +22,7 @@ public class Wallet {
     public Wallet(){
         Security.addProvider(new BouncyCastleProvider());
         this.publicKeys = createListFromFiles();
-        generateKeyPair();
+
     }
 
     public void generateKeyPair() {
@@ -46,15 +47,13 @@ public class Wallet {
         // we use Base32 instead of Base64 because 64 uses / which can cause problems when creating files
     public void writeKeyToFile(PublicKey publicKey, PrivateKey privateKey) {
         try {
-            byte[] publicEncoded = publicKey.getEncoded();
-            byte[] privateEncoded = privateKey.getEncoded();
-            String path = "Keys/" + Base32.toBase32String(publicEncoded);
+            String path = "Keys/" + keyToString(publicKey);
 
             File keyPair = new File(path);
             keyPair.createNewFile();
 
             PrintWriter writer = new PrintWriter(keyPair);
-            writer.println(Base32.toBase32String(privateEncoded));
+            writer.println(keyToString(privateKey));
             writer.close();
 
         } catch(IOException e) {
@@ -62,7 +61,7 @@ public class Wallet {
         }
     }
 
-        // if array comes back empty == no keys so we should generate keypair otherwise go through the file names and convert them to public key objects
+        // if array comes back empty == no keys, so we should generate keypair otherwise we go through the file names and convert them to public key objects
     public ArrayList<PublicKey> createListFromFiles() {
         ArrayList<PublicKey> listOfKeys = new ArrayList<PublicKey>();
         File keyFolder = new File("Keys");
@@ -87,6 +86,46 @@ public class Wallet {
             }
         }
         return listOfKeys;
+    }
+        /* take in publicKey, convert that to string, compare string with filenames in Keys folder
+            if publicKey matches a file name, go into that file, then convert the data in file (private key in string form)
+            and convert that into a PrivateKey which can be used for signing transactions
+         */
+    public PrivateKey getPrivateFromPublic(PublicKey pk){
+        String searchFor = keyToString(pk);
+        File[] keyDir = new File("Keys/").listFiles();
+
+        for (File file : keyDir) {
+            if (searchFor.equals(file.getName())) {
+                try {
+                    Scanner reader = new Scanner(file);
+                    String encodedString = reader.nextLine();
+                    byte[] privateKeyBytes = Base32.decode(encodedString);
+                    PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(privateKeyBytes);
+                    KeyFactory keyFac = KeyFactory.getInstance("EC", "BC");
+
+                    PrivateKey decodedKey = keyFac.generatePrivate(keySpec);
+
+                    return decodedKey;
+                } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException | NoSuchProviderException e) {
+                    throw new RuntimeException("error reading private key", e);
+                }
+            }
+        }
+
+        System.out.println("no key returned");
+        return null;
+    }
+
+
+    public String keyToString(Key key){
+        byte[] publicEncoded = key.getEncoded();
+
+        return Base32.toBase32String(publicEncoded);
+    }
+
+    public PublicKey getPublicByIndex(int index){
+        return publicKeys.get(index);
     }
 
 }
