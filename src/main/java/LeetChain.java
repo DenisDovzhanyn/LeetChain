@@ -8,7 +8,7 @@ public class LeetChain {
         Block block;
 
         Wallet wallet = new Wallet();
-
+/*
         if(chain.getBlockChain().isEmpty()) {
             block = new Block("genesis","hello","question",1, 3000000);
             block.mineBlock();
@@ -23,7 +23,7 @@ public class LeetChain {
 
        }
 
-
+*/
     }
 
 }

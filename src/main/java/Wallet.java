@@ -6,8 +6,12 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.security.*;
 import java.security.spec.ECGenParameterSpec;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 
 public class Wallet {
     private List<PublicKey> publicKeys = new ArrayList<PublicKey>();
@@ -15,6 +19,8 @@ public class Wallet {
 
 
     public Wallet(){
+        Security.addProvider(new BouncyCastleProvider());
+        this.publicKeys = createListFromFiles();
         generateKeyPair();
     }
 
@@ -23,10 +29,9 @@ public class Wallet {
             PublicKey publicKey;
             PrivateKey privateKey;
 
-            Security.addProvider(new BouncyCastleProvider());
+
             KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance("EC", "BC");
             keyPairGen.initialize(new ECGenParameterSpec("P-256"));
-            keyPairGen.generateKeyPair();
             KeyPair keyPair = keyPairGen.generateKeyPair();
 
             publicKey = keyPair.getPublic();
@@ -39,7 +44,7 @@ public class Wallet {
         }
     }
         // we use Base32 instead of Base64 because 64 uses / which can cause problems when creating files
-    public void writeKeyToFile(PublicKey publicKey, PrivateKey privateKey){
+    public void writeKeyToFile(PublicKey publicKey, PrivateKey privateKey) {
         try {
             byte[] publicEncoded = publicKey.getEncoded();
             byte[] privateEncoded = privateKey.getEncoded();
@@ -56,4 +61,32 @@ public class Wallet {
             throw new RuntimeException("Error writing key to file", e);
         }
     }
+
+        // if array comes back empty == no keys so we should generate keypair otherwise go through the file names and convert them to public key objects
+    public ArrayList<PublicKey> createListFromFiles() {
+        ArrayList<PublicKey> listOfKeys = new ArrayList<PublicKey>();
+        File keyFolder = new File("Keys");
+        keyFolder.mkdir();
+        File[] keys = new File("Keys/").listFiles();
+
+        if (keys.length == 0) {
+            generateKeyPair();
+        } else {
+            try {
+                for (File file : keys) {
+                    byte[] encoded = Base32.decode(file.getName());
+
+                    X509EncodedKeySpec keySpec = new X509EncodedKeySpec(encoded);
+                    KeyFactory keyFactory = KeyFactory.getInstance("EC", "BC");
+                    PublicKey toKey = keyFactory.generatePublic(keySpec);
+
+                    listOfKeys.add(toKey);
+                }
+            } catch (NoSuchAlgorithmException | InvalidKeySpecException | NoSuchProviderException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return listOfKeys;
+    }
+
 }
