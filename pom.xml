@@ -21,6 +21,21 @@
         <artifactId>rocksdbjni</artifactId>
         <version>9.4.0</version>
     </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-lts8on -->
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-lts8on</artifactId>
+            <version>2.73.6</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-collections4 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
+            <version>4.5.0-M2</version>
+        </dependency>
+
     </dependencies>
 
 </project>

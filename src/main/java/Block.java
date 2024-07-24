@@ -41,12 +41,14 @@ public class Block implements Serializable {
 
     public void mineBlock(){
         BigInteger hashValue = null;
-
+        System.out.println("mining block at index: " + blockNumber + ", at difficulty: " + difficulty + "... ");
         while(!isHashFound(hashValue)){
             nonce++;
             hash = calHash();
             hashValue = new BigInteger(hash, 16);
-            System.out.println(hash);
+
+
+            System.out.print( hash + "\r");
 
         }
 
