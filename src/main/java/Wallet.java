@@ -47,13 +47,13 @@ public class Wallet {
         // we use Base32 instead of Base64 because 64 uses / which can cause problems when creating files
     public void writeKeyToFile(PublicKey publicKey, PrivateKey privateKey) {
         try {
-            String path = "Keys/" + keyToString(publicKey);
+            String path = "Keys/" + Util.keyToString(publicKey);
 
             File keyPair = new File(path);
             keyPair.createNewFile();
 
             PrintWriter writer = new PrintWriter(keyPair);
-            writer.println(keyToString(privateKey));
+            writer.println(Util.keyToString(privateKey));
             writer.close();
 
         } catch(IOException e) {
@@ -92,7 +92,7 @@ public class Wallet {
             and convert that into a PrivateKey which can be used for signing transactions
          */
     public PrivateKey getPrivateFromPublic(PublicKey pk){
-        String searchFor = keyToString(pk);
+        String searchFor = Util.keyToString(pk);
         File[] keyDir = new File("Keys/").listFiles();
 
         for (File file : keyDir) {
@@ -118,11 +118,7 @@ public class Wallet {
     }
 
 
-    public String keyToString(Key key){
-        byte[] publicEncoded = key.getEncoded();
 
-        return Base32.toBase32String(publicEncoded);
-    }
 
     public PublicKey getPublicByIndex(int index){
         return publicKeys.get(index);

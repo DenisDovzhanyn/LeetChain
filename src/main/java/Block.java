@@ -33,7 +33,7 @@ public class Block implements Serializable {
 
 
     public String calHash(){
-        String calculatedHash = Hasher.hash(previousHash + Long.toString(timeStamp) + question + answer
+        String calculatedHash = Util.hash(previousHash + Long.toString(timeStamp) + question + answer
                 + Integer.toString(difficulty) + Integer.toString(nonce));
 
         return calculatedHash;

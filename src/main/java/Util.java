@@ -1,6 +1,9 @@
+import org.bouncycastle.util.encoders.Base32;
+
+import java.security.Key;
 import java.security.MessageDigest;
 
-public class Hasher {
+public class Util {
 
     // takes in input and converts it into a unique hash
     public static String hash(String input){
@@ -22,5 +25,12 @@ public class Hasher {
         } catch(Exception f){
             throw new RuntimeException(f);
         }
+    }
+
+
+    public static String keyToString(Key key){
+        byte[] publicEncoded = key.getEncoded();
+
+        return Base32.toBase32String(publicEncoded);
     }
 }
