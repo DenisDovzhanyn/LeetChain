@@ -111,8 +111,8 @@ public class Ledger {
     }
 
     // ADD A PUT/REMOVE/GET METHOD FOR UTXOS!!!!!!!
-    public ArrayList<UTXO> getUTXOList(PublicKey key) {
-        ArrayList<UTXO> output;
+    public ArrayList<TransactionOutput> getUTXOList(PublicKey key) {
+        ArrayList<TransactionOutput> output;
 
         try {
             byte[] listByte = db.get(Util.keyToString(key).getBytes());
@@ -120,7 +120,7 @@ public class Ledger {
             ByteArrayInputStream byteArray = new ByteArrayInputStream(listByte);
             ObjectInputStream ois = new ObjectInputStream(byteArray);
 
-            output = (ArrayList<UTXO>) ois.readObject();
+            output = (ArrayList<TransactionOutput>) ois.readObject();
 
             return output;
         } catch (RocksDBException | IOException | ClassNotFoundException e) {
@@ -128,7 +128,7 @@ public class Ledger {
         }
     }
 
-    public void addOrUpdateUTXOList(String publicKey, ArrayList<UTXO> list) {
+    public void addOrUpdateUTXOList(String publicKey, ArrayList<TransactionOutput> list) {
         byte[] utxoList = null;
         byte[] key = publicKey.getBytes();
         try {

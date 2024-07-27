@@ -1,11 +1,11 @@
 import java.security.PublicKey;
 
-public class UTXO {
+public class TransactionOutput {
     public String hashId;
     public PublicKey receiver;
     public float value;
 
-    public UTXO(PublicKey receiver, float value) {
+    public TransactionOutput(PublicKey receiver, float value) {
         this.receiver = receiver;
         this.value = value;
         this.hashId = Util.hash(Util.keyToString(receiver) + Float.toString(value));

@@ -117,11 +117,18 @@ public class Wallet {
         return null;
     }
 
-
-
-
     public PublicKey getPublicByIndex(int index){
         return publicKeys.get(index);
+    }
+
+    public void printBalanceByKey(PublicKey key){
+        ArrayList<TransactionOutput> unspent = Ledger.getInstance().getUTXOList(key);
+        float total = 0;
+        for(TransactionOutput x : unspent){
+            total += x.value;
+        }
+
+        System.out.println("Your have " + total + "LeetCoins");
     }
 
 }
