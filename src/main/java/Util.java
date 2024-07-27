@@ -1,6 +1,10 @@
 import org.bouncycastle.util.encoders.Base32;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.security.*;
+import java.util.ArrayList;
 
 public class Util {
 
@@ -33,9 +37,6 @@ public class Util {
     }
 
     public static byte[] applySignature(PrivateKey privateKey, String input) {
-
-        byte[] output;
-
         try {
             Signature signature = Signature.getInstance("ECDSA", "BC");
             signature.initSign(privateKey);
@@ -43,13 +44,11 @@ public class Util {
             byte[] inputBytes = input.getBytes();
             signature.update(inputBytes);
 
-            output = signature.sign();
+            return signature.sign();
 
         } catch (Exception e) {
             throw new RuntimeException("error applying signature", e);
         }
-
-        return output;
     }
 
     public static boolean verifySignature(PublicKey publicKey, String data, byte[] signature){
@@ -63,4 +62,5 @@ public class Util {
             throw new RuntimeException("error verifying", e);
         }
     }
+
 }

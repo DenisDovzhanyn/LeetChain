@@ -2,9 +2,9 @@ import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
-import org.rocksdb.RocksIterator;
 
 import java.io.*;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,9 +31,9 @@ public class Ledger {
 
     }
 
-    // REMINDER WE NEED TO CHANGE THE KEY TO BE THE BLOCKS HASH AND ADD A NEW ENTRY IN DB WITH KEY LATESTHASH THAT HOLDS
-    //  THE VALUE OF THE LATEST HASH, SO WE CAN USE THAT HASH VALUE TO FIND THE ACTUAL ENTRY FOR THE LATEST BLOCK
-    // serializes block and adds it to rocksDB, key will be block number
+
+    // serializes block and adds it to rocksDB, key will be block hash
+    // latestblockhash always updated to point at the latest mined block
     public void addBlock(Block block, String key) {
         try {
             ByteArrayOutputStream bytArray = new ByteArrayOutputStream();
@@ -58,7 +58,7 @@ public class Ledger {
         try{
             byte[] blockBytes = db.get(key.getBytes());
 
-            if(blockBytes != null) gottenBlock = deserialize(blockBytes);
+            if(blockBytes != null) gottenBlock = deserializeBlock(blockBytes);
 
         } catch (RocksDBException f) {
             throw new RuntimeException("error getting block",f);
@@ -86,7 +86,7 @@ public class Ledger {
                 }
 
                 if (value != null) {
-                    Block block = deserialize(value);
+                    Block block = deserializeBlock(value);
                     previousHash = block.previousHash;
                     beforeFifoQueue.add(0, block);
                 }
@@ -99,7 +99,7 @@ public class Ledger {
         return list;
     }
 
-    public Block deserialize(byte[] value){
+    public Block deserializeBlock(byte[] value){
         try(ByteArrayInputStream bytArray = new ByteArrayInputStream(value);
             ObjectInputStream ois = new ObjectInputStream(bytArray)){
             Block block = (Block) ois.readObject();
@@ -109,6 +109,42 @@ public class Ledger {
             throw new RuntimeException("error deserializing", e);
         }
     }
+
+    // ADD A PUT/REMOVE/GET METHOD FOR UTXOS!!!!!!!
+    public ArrayList<UTXO> getUTXOList(PublicKey key) {
+        ArrayList<UTXO> output;
+
+        try {
+            byte[] listByte = db.get(Util.keyToString(key).getBytes());
+
+            ByteArrayInputStream byteArray = new ByteArrayInputStream(listByte);
+            ObjectInputStream ois = new ObjectInputStream(byteArray);
+
+            output = (ArrayList<UTXO>) ois.readObject();
+
+            return output;
+        } catch (RocksDBException | IOException | ClassNotFoundException e) {
+            throw new RuntimeException("error getting utxo list", e);
+        }
+    }
+
+    public void addOrUpdateUTXOList(String publicKey, ArrayList<UTXO> list) {
+        byte[] utxoList = null;
+        byte[] key = publicKey.getBytes();
+        try {
+            ByteArrayOutputStream byteArray = new ByteArrayOutputStream();
+            ObjectOutputStream obs = new ObjectOutputStream(byteArray);
+
+            obs.writeObject(list);
+            utxoList = byteArray.toByteArray();
+
+            db.put(key, utxoList);
+
+        } catch (RocksDBException | IOException e) {
+            throw new RuntimeException("error adding UTXO list to db",e);
+        }
+    }
+
 
 
 }
