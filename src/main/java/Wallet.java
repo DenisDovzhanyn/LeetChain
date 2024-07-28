@@ -121,14 +121,16 @@ public class Wallet {
         return publicKeys.get(index);
     }
 
-    public void printBalanceByKey(PublicKey key){
-        ArrayList<TransactionOutput> unspent = Ledger.getInstance().getUTXOList(key);
-        float total = 0;
-        for(TransactionOutput x : unspent){
-            total += x.value;
-        }
+    public void printBalance(){
+        for (PublicKey key : publicKeys) {
+            ArrayList<TransactionOutput> unspent = Ledger.getInstance().getUTXOList(key);
+            float totalAmountOnKey = 0;
 
-        System.out.println("Your have " + total + "LeetCoins");
+            for (TransactionOutput x : unspent) {
+                totalAmountOnKey += x.getValue();
+            }
+            System.out.println(Util.keyToString(key) + " : " + totalAmountOnKey);
+        }
     }
 
 }

@@ -18,6 +18,7 @@ public class Transaction {
         this.sender = sender;
         this.receiver = receiver;
         this.amount = amount;
+        transactionId = calculateID();
     }
 
     private String calculateID() {
@@ -46,17 +47,12 @@ public class Transaction {
         float temp = 0;
 
         for (TransactionOutput input : UTXO) {
-            if(temp > amount) break;
+            if(temp >= amount) break;
             inputs.add(input);
-            temp += input.value;
+            temp += input.getValue();
         }
 
-        return (temp > amount);
+       return (temp >= amount);
     }
-
-
-
-
-
 
 }

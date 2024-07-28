@@ -9,10 +9,9 @@ public class LeetChain {
         BlockChain chain = new BlockChain();
         Block block;
 
-        Wallet wallet = new Wallet();
-        PublicKey key = wallet.getPublicByIndex(0);
-        PrivateKey test = wallet.getPrivateFromPublic(key);
-        System.out.println(test.toString());
+        Wallet a = new Wallet();
+        Wallet b = new Wallet();
+        Transaction transaction = new Transaction(a.getPublicByIndex(0), b.getPublicByIndex(1), 5);
 /*
         if(chain.getBlockChain().isEmpty()) {
             block = new Block("genesis","hello","question",1, 3000000);
@@ -25,10 +24,7 @@ public class LeetChain {
            Block newBlock = new Block(chain.getPrevious().hash, "question", "answer", chain.getPrevious().blockNumber + 1, chain.calculateDifficulty());
            newBlock.mineBlock();
            chain.add(newBlock);
-
        }
-
 */
     }
-
 }
