@@ -13,6 +13,7 @@ public class Block implements Serializable {
     public int blockNumber = 1;
 
 
+    public transient BigInteger currentHashValue;
 
 
     public Block(String previousHash, String answer, String question, int blockNumber, int difficulty){
@@ -40,20 +41,9 @@ public class Block implements Serializable {
     }
 
     public void mineBlock(){
-        BigInteger hashValue = null;
-        System.out.println("mining block at index: " + blockNumber + ", at difficulty: " + difficulty + "... ");
-        while(!isHashFound(hashValue)){
             nonce++;
             hash = calHash();
-            hashValue = new BigInteger(hash, 16);
-
-
-            System.out.print( hash + "\r");
-
-        }
-
-        System.out.println("Nice you've mined a block: " + hash);
-
+            currentHashValue = new BigInteger(hash,16);
     }
 
     public boolean isHashFound(BigInteger actual){

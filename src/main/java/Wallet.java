@@ -14,14 +14,15 @@ import java.util.List;
 import java.util.Scanner;
 
 
-public class Wallet {
+public class Wallet implements Runnable{
     private List<PublicKey> publicKeys = new ArrayList<PublicKey>();
 
 
-
-    public Wallet(){
+    @Override
+    public void run(){
         Security.addProvider(new BouncyCastleProvider());
         this.publicKeys = createListFromFiles();
+        System.out.println(Util.keyToString(getPublicByIndex(0)));
 
     }
 

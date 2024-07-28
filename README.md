@@ -1,13 +1,13 @@
-# LeetChain
+# Main
 
 ## Overview
 
-LeetChain is an experimental blockchain implementation where transactions consist of LeetCode questions and their corresponding answers.
+Main is an experimental blockchain implementation where transactions consist of LeetCode questions and their corresponding answers.
 This project aims to explore blockchain technology while leveraging EC keys for wallet management and utilizing ROCKSDB for data persistence.
 
 ## Motivation
 
-The primary goals of LeetChain are:
+The primary goals of Main are:
 
 - **Understanding Blockchain**: Gain a deeper understanding of blockchain technology by implementing a simplified version.
 - **Hands-On Learning**: Apply theoretical blockchain knowledge to a practical project involving real-world(ish) data and cryptography.
