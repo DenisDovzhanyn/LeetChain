@@ -1,10 +1,8 @@
 import org.bouncycastle.util.encoders.Base32;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.security.*;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Util {
 
@@ -61,6 +59,27 @@ public class Util {
         } catch (Exception e) {
             throw new RuntimeException("error verifying", e);
         }
+    }
+
+
+    public String getMerkleRoot(List<String> transactionHashes) {
+        if(transactionHashes.size() == 1) return transactionHashes.get(0);
+
+        List<String> parentList = new ArrayList<>();
+
+        for (int i = 0; i < transactionHashes.size(); i+= 2) {
+            String hash = hash(transactionHashes.get(i) + transactionHashes.get(i+1));
+            parentList.add(hash);
+        }
+
+        if (transactionHashes.size() % 2 == 1) {
+            String duplicateLast = transactionHashes.get(transactionHashes.size()-1);
+            String hashed = hash(duplicateLast + duplicateLast);
+            parentList.add(hashed);
+        }
+
+        return getMerkleRoot(parentList);
+
     }
 
 }
