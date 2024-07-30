@@ -145,6 +145,14 @@ public class Ledger {
         }
     }
 
+    public void deleteBlockByKey(String key) {
+        try {
+            db.delete(key.getBytes());
+        } catch (RocksDBException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
 
 }

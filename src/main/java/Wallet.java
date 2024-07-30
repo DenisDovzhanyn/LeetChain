@@ -23,7 +23,6 @@ public class Wallet implements Runnable{
         Security.addProvider(new BouncyCastleProvider());
         this.publicKeys = createListFromFiles();
 
-        System.out.println(Util.keyToString(getPublicByIndex(0)));
 
     }
 
@@ -113,6 +112,7 @@ public class Wallet implements Runnable{
 
                     PrivateKey decodedKey = keyFac.generatePrivate(keySpec);
 
+                    reader.close();
                     return decodedKey;
                 } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException | NoSuchProviderException e) {
                     throw new RuntimeException("error reading private key", e);
@@ -141,6 +141,14 @@ public class Wallet implements Runnable{
             }
             System.out.println(Util.keyToString(key) + " : " + totalAmountOnKey);
         }
+    }
+
+    public boolean removeKey(PublicKey key) {
+        File file = new File("Keys/" + Util.keyToString(key));
+
+        if (file.delete()) return true;
+
+        return false;
     }
 
 }

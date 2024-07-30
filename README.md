@@ -14,9 +14,9 @@ The primary goals of LeetChain are:
 
 ## Features
 
-- **Block Structure**: Each block contains a set of transactions (LeetCode questions and answers).
+- **java.com.LeetChain.Block Structure**: Each block contains a set of transactions (LeetCode questions and answers).
 - **Proof of Work**: Implement a basic Proof of Work (PoW) algorithm for block validation.
-- **Decentralized Ledger**: Simulate a decentralized ledger where each node can add new blocks to the chain.
+- **Decentralized java.com.LeetChain.Ledger**: Simulate a decentralized ledger where each node can add new blocks to the chain.
 - **EC Keys for Wallets**: Utilize Elliptic Curve (EC) cryptography for secure wallet management, allowing users to sign transactions with their private keys.
 - **RocksDB Persistence**: Use RocksDB for efficient and reliable data persistence, ensuring the integrity and accessibility of the blockchain data.
 - **Multi-Threading**: Implement multi-threading to concurrently handle node operations, mining processes, and wallet management.
@@ -25,9 +25,9 @@ The primary goals of LeetChain are:
 
 Multi-threading is integrated to enhance the functionality and efficiency of LeetChain, allowing multiple processes to operate simultaneously. Key aspects include:
 
-- **Node Operation**: A dedicated thread manages the node's operations, including network communication, receiving and broadcasting blocks and transactions, and maintaining the decentralized ledger.
+- **java.com.LeetChain.Node Operation**: A dedicated thread manages the node's operations, including network communication, receiving and broadcasting blocks and transactions, and maintaining the decentralized ledger.
 - **Mining**: Another thread is responsible for the mining process. This includes solving the Proof of Work (PoW) algorithm to find valid blocks and add them to the blockchain.
-- **Wallet Management**: A separate thread handles wallet operations, such as managing keys, signing transactions, and ensuring secure access to wallet functionalities.
+- **java.com.LeetChain.Wallet Management**: A separate thread handles wallet operations, such as managing keys, signing transactions, and ensuring secure access to wallet functionalities.
 
 By employing multi-threading, LeetChain achieves:
 
