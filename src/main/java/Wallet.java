@@ -151,4 +151,8 @@ public class Wallet implements Runnable{
         return false;
     }
 
+    public void addToKeyList(PublicKey key) {
+        publicKeys.add(key);
+    }
+
 }

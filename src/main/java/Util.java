@@ -49,19 +49,20 @@ public class Util {
         }
     }
 
-    public static boolean verifySignature(PublicKey publicKey, String data, byte[] signature){
+    public static boolean verifySignature (PublicKey sender, String transactionId, byte[] signature) {
         try {
             Signature verify = Signature.getInstance("ECDSA", "BC");
-            verify.initVerify(publicKey);
-            verify.update(data.getBytes());
+            verify.initVerify(sender);
+            verify.update(transactionId.getBytes());
 
             return verify.verify(signature);
         } catch (Exception e) {
             throw new RuntimeException("error verifying", e);
         }
+
     }
 
-    public static String getMerkleRoot(List<Transaction> transactions) {
+    public static String getMerkleRoot (List<Transaction> transactions) {
         List<String> endResult = new ArrayList<>();
 
         for(Transaction x : transactions){
@@ -72,7 +73,7 @@ public class Util {
     }
 
     // tried to make this overloaded but java is stupid and thinks List<Transaction> is the same as List<String> and will not let it compile
-    private static String getMerkleRootFromHashes(List<String> transactionHashes) {
+    private static String getMerkleRootFromHashes (List<String> transactionHashes) {
         if(transactionHashes.size() == 1) return transactionHashes.get(0);
 
         List<String> parentList = new ArrayList<>();
