@@ -61,8 +61,18 @@ public class Util {
         }
     }
 
+    public static String getMerkleRoot(List<Transaction> transactions) {
+        List<String> endResult = new ArrayList<>();
 
-    public String getMerkleRoot(List<String> transactionHashes) {
+        for(Transaction x : transactions){
+            endResult.add(x.transactionId);
+        }
+
+        return getMerkleRootFromHashes(endResult);
+    }
+
+    // tried to make this overloaded but java is stupid and thinks List<Transaction> is the same as List<String> and will not let it compile
+    private static String getMerkleRootFromHashes(List<String> transactionHashes) {
         if(transactionHashes.size() == 1) return transactionHashes.get(0);
 
         List<String> parentList = new ArrayList<>();
@@ -78,8 +88,10 @@ public class Util {
             parentList.add(hashed);
         }
 
-        return getMerkleRoot(parentList);
+        return getMerkleRootFromHashes(parentList);
 
     }
+
+
 
 }

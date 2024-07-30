@@ -52,7 +52,7 @@ public class Transaction {
             temp += input.getValue();
         }
 
-       return (temp >= amount);
+        return (temp >= amount);
     }
 
 }

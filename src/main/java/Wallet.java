@@ -22,11 +22,12 @@ public class Wallet implements Runnable{
     public void run(){
         Security.addProvider(new BouncyCastleProvider());
         this.publicKeys = createListFromFiles();
+
         System.out.println(Util.keyToString(getPublicByIndex(0)));
 
     }
 
-    public void generateKeyPair() {
+    public PublicKey generateKeyPair() {
         try {
             PublicKey publicKey;
             PrivateKey privateKey;
@@ -41,6 +42,8 @@ public class Wallet implements Runnable{
             publicKeys.add(keyPair.getPublic());
 
             writeKeyToFile(publicKey, privateKey);
+
+            return publicKey;
         } catch(GeneralSecurityException e){
             throw new RuntimeException("error generating key pair", e);
         }
@@ -70,22 +73,25 @@ public class Wallet implements Runnable{
         File[] keys = new File("Keys/").listFiles();
 
         if (keys.length == 0) {
-            generateKeyPair();
-        } else {
-            try {
-                for (File file : keys) {
-                    byte[] encoded = Base32.decode(file.getName());
+            listOfKeys.add(generateKeyPair());
 
-                    X509EncodedKeySpec keySpec = new X509EncodedKeySpec(encoded);
-                    KeyFactory keyFactory = KeyFactory.getInstance("EC", "BC");
-                    PublicKey toKey = keyFactory.generatePublic(keySpec);
-
-                    listOfKeys.add(toKey);
-                }
-            } catch (NoSuchAlgorithmException | InvalidKeySpecException | NoSuchProviderException e) {
-                throw new RuntimeException(e);
-            }
+            return listOfKeys;
         }
+
+        try {
+            for (File file : keys) {
+                byte[] encoded = Base32.decode(file.getName());
+
+                X509EncodedKeySpec keySpec = new X509EncodedKeySpec(encoded);
+                KeyFactory keyFactory = KeyFactory.getInstance("EC", "BC");
+                PublicKey toKey = keyFactory.generatePublic(keySpec);
+
+                listOfKeys.add(toKey);
+            }
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException | NoSuchProviderException e) {
+            throw new RuntimeException("Error getting keys from file", e);
+        }
+
         return listOfKeys;
     }
         /* take in publicKey, convert that to string, compare string with filenames in Keys folder
@@ -122,12 +128,15 @@ public class Wallet implements Runnable{
         return publicKeys.get(index);
     }
 
-    public void printBalance(){
+    //prints Balance of all keys in key : balance format
+    public void printBalance() {
         for (PublicKey key : publicKeys) {
             ArrayList<TransactionOutput> unspent = Ledger.getInstance().getUTXOList(key);
             float totalAmountOnKey = 0;
 
             for (TransactionOutput x : unspent) {
+                if(x == null) continue;
+
                 totalAmountOnKey += x.getValue();
             }
             System.out.println(Util.keyToString(key) + " : " + totalAmountOnKey);
