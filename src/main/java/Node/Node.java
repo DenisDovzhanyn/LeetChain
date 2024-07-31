@@ -1,9 +1,16 @@
 package Node;
 
 import Miner.Block;
+import Wallet.Transaction;
+
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Node implements Runnable{
+    ConcurrentLinkedQueue<Transaction> toMinerAndOtherNodes;
 
+    public Node (ConcurrentLinkedQueue<Transaction> foward) {
+        toMinerAndOtherNodes = foward;
+    }
     @Override
     public void run() {
 

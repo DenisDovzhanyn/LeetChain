@@ -14,12 +14,18 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import Utilities.Util;
 import Node.Ledger;
 
 public class Wallet implements Runnable{
     private List<PublicKey> publicKeys = new ArrayList<PublicKey>();
+    ConcurrentLinkedQueue<Transaction> toNode;
 
+    public Wallet (ConcurrentLinkedQueue<Transaction> toNode) {
+        this.toNode = toNode;
+    }
 
     @Override
     public void run(){
@@ -30,15 +36,14 @@ public class Wallet implements Runnable{
     }
 
 
-    public Transaction generateTransaction(PublicKey sender, PublicKey receiver, float amount, TransactionType type) {
+    public void generateTransaction(PublicKey sender, PublicKey receiver, float amount, TransactionType type) {
         Transaction transaction = new Transaction(type);
         transaction.addUTXOs(amount,sender,receiver);
 
         for(TransactionOutput x : transaction.outputs) {
             x.applySig(getPrivateFromPublic(sender));
         }
-
-        return transaction;
+        toNode.add(transaction);
     }
 
     public PublicKey generateKeyPair() {

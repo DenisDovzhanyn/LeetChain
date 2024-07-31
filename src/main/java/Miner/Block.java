@@ -5,13 +5,14 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class Block implements Serializable {
     public String hash;
     public String previousHash;
     private long timeStamp;
     public String merkleRoot;
-    public ArrayList<Transaction> transactionlist = new ArrayList<>();
+    public List<Transaction> transactionlist = new ArrayList<>();
     private int nonce;
     private int difficulty = 1;
     public int blockNumber = 1;
@@ -20,7 +21,7 @@ public class Block implements Serializable {
     public transient BigInteger currentHashValue;
 
 
-    public Block(String previousHash, int blockNumber, int difficulty, ArrayList<Transaction> transactionlist){
+    public Block(String previousHash, int blockNumber, int difficulty, List<Transaction> transactionlist){
         this.previousHash = previousHash;
         this.timeStamp = new Date().getTime();
         this.hash = calHash();
