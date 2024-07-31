@@ -1,3 +1,4 @@
+import Utilities.Util;
 import Wallet.Wallet;
 import org.junit.Assert;
 import org.junit.Before;
@@ -7,14 +8,16 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import Wallet.Transaction;
+import Wallet.TransactionType;
 public class WalletTest {
     PublicKey publicTestKey;
     PrivateKey privateTestKey;
     Wallet wallet;
+    ConcurrentLinkedQueue<Transaction> requiredForWallet;
 
     @Before
     public void setPublicTestKey() {
-        ConcurrentLinkedQueue<Transaction> requiredForWallet = new ConcurrentLinkedQueue<Transaction>();
+        requiredForWallet = new ConcurrentLinkedQueue<Transaction>();
 
         wallet = new Wallet(requiredForWallet);
         wallet.run();
@@ -28,5 +31,13 @@ public class WalletTest {
 
         Assert.assertNotNull("private key returning null", privateTestKey);
         Assert.assertTrue("key not deleting properly", wallet.removeKey(publicTestKey));
+    }
+
+    @Test
+    public void signatureVerifying() {
+        wallet.generateTransaction(wallet.getPublicByIndex(0), wallet.getPublicByIndex(0), 5, TransactionType.COINBASE);
+        String transId = requiredForWallet.peek().outputs.get(0).Id;
+        byte[] signature = requiredForWallet.peek().outputs.get(0).signature;
+        Assert.assertTrue("signature not verifying", Util.verifySignature(wallet.getPublicByIndex(0),transId, signature));
     }
 }

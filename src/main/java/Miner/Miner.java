@@ -28,7 +28,7 @@ public class Miner implements Runnable {
             if(!transactionList.isEmpty()) {
                 block = new Block(chain.getPrevious().hash, chain.getPrevious().blockNumber + 1, chain.calculateDifficulty(), transactionList);
             } else {
-                block = new Block(chain.getPrevious().hash, chain.getPrevious().blockNumber + 1, chain.calculateDifficulty(), transactionList);
+                block = new Block(chain.getPrevious().hash, chain.getPrevious().blockNumber + 1, chain.calculateDifficulty());
             }
 
             mineBlock(block);
