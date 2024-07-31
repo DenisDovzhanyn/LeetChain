@@ -1,3 +1,8 @@
+package Node;
+
+import Miner.Block;
+import Wallet.TransactionOutput;
+import Utilities.Util;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;

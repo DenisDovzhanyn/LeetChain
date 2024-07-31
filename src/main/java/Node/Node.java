@@ -1,3 +1,7 @@
+package Node;
+
+import Miner.Block;
+
 public class Node implements Runnable{
 
     @Override

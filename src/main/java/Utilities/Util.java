@@ -1,8 +1,11 @@
+package Utilities;
+
 import org.bouncycastle.util.encoders.Base32;
 
 import java.security.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 public class Util {
 
@@ -62,11 +65,11 @@ public class Util {
 
     }
 
-    public static String getMerkleRoot (List<Transaction> transactions) {
+    public static <T> String getMerkleRoot (List<T> items, Function<T, String> lambda) {
         List<String> endResult = new ArrayList<>();
 
-        for(Transaction x : transactions){
-            endResult.add(x.transactionId);
+        for (T x : items) {
+            endResult.add(lambda.apply(x));
         }
 
         return getMerkleRootFromHashes(endResult);

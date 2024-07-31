@@ -1,4 +1,7 @@
+package Miner;
+
 import org.apache.commons.collections4.queue.CircularFifoQueue;
+import Node.Ledger;
 
 public class BlockChain {
 

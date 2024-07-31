@@ -1,15 +1,17 @@
+package Miner;
+import Wallet.Transaction;
+import Utilities.Util;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 public class Block implements Serializable {
     public String hash;
     public String previousHash;
     private long timeStamp;
     public String merkleRoot;
-    public ArrayList<Transaction> transactionlist;
+    public ArrayList<Transaction> transactionlist = new ArrayList<>();
     private int nonce;
     private int difficulty = 1;
     public int blockNumber = 1;
@@ -25,9 +27,15 @@ public class Block implements Serializable {
         this.blockNumber = blockNumber;
         this.difficulty = difficulty;
         this.transactionlist = transactionlist;
-        this.merkleRoot = Util.getMerkleRoot(transactionlist);
+        this.merkleRoot = Util.getMerkleRoot(transactionlist, (Transaction x) -> x.id);
+    }
 
-
+    public Block(String previousHash, int blockNumber, int difficulty){
+        this.previousHash = previousHash;
+        this.timeStamp = new Date().getTime();
+        this.hash = calHash();
+        this.blockNumber = blockNumber;
+        this.difficulty = difficulty;
     }
 
     public Block(){

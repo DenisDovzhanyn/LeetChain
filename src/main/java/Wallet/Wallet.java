@@ -1,3 +1,5 @@
+package Wallet;
+
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Base32;
 
@@ -12,7 +14,8 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-
+import Utilities.Util;
+import Node.Ledger;
 
 public class Wallet implements Runnable{
     private List<PublicKey> publicKeys = new ArrayList<PublicKey>();
@@ -24,6 +27,18 @@ public class Wallet implements Runnable{
         this.publicKeys = createListFromFiles();
 
 
+    }
+
+
+    public Transaction generateTransaction(PublicKey sender, PublicKey receiver, float amount, TransactionType type) {
+        Transaction transaction = new Transaction(type);
+        transaction.addUTXOs(amount,sender,receiver);
+
+        for(TransactionOutput x : transaction.outputs) {
+            x.applySig(getPrivateFromPublic(sender));
+        }
+
+        return transaction;
     }
 
     public PublicKey generateKeyPair() {

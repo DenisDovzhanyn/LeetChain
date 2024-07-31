@@ -1,4 +1,4 @@
-import org.junit.After;
+import Wallet.Wallet;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

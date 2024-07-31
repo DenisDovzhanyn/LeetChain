@@ -1,22 +1,24 @@
+package Miner;
+
 public class Miner implements Runnable {
 
     @Override
     public void run() {
         BlockChain chain = new BlockChain();
-/*
+
         if (chain.getBlockChain().isEmpty()) {
-            Block block = new Block("0", "genesis", "genesis", 1, 500000);
+            Block block = new Block("0", 1, 500000);
             mineBlock(block);
             chain.add(block);
         }
 
         while(true) {
-            Block block = new Block(chain.getPrevious().hash, "question", "answer", chain.getPrevious().blockNumber + 1, chain.calculateDifficulty());
+            Block block = new Block(chain.getPrevious().hash, chain.getPrevious().blockNumber + 1, chain.calculateDifficulty());
             mineBlock(block);
             chain.add(block);
         }
 
- */
+
     }
 
 
