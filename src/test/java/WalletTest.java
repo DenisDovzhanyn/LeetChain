@@ -1,5 +1,6 @@
 import Utilities.Util;
 import Wallet.Wallet;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,7 +31,7 @@ public class WalletTest {
         privateTestKey = wallet.getPrivateFromPublic(publicTestKey);
 
         Assert.assertNotNull("private key returning null", privateTestKey);
-        Assert.assertTrue("key not deleting properly", wallet.removeKey(publicTestKey));
+
     }
 
     @Test
@@ -40,4 +41,11 @@ public class WalletTest {
         byte[] signature = requiredForWallet.peek().outputs.get(0).signature;
         Assert.assertTrue("signature not verifying", Util.verifySignature(wallet.getPublicByIndex(0),transId, signature));
     }
+
+    @After
+    public void deleteKey() {
+        Assert.assertTrue("key not deleting properly", wallet.removeKey(publicTestKey));
+    }
+
+
 }

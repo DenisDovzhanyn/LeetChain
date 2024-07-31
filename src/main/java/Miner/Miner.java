@@ -1,7 +1,10 @@
 package Miner;
 
 import Wallet.Transaction;
+import Wallet.TransactionType;
+import Wallet.Wallet;
 
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -9,15 +12,19 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class Miner implements Runnable {
     ConcurrentLinkedQueue<Transaction> transactionsToMiner;
     List<Transaction> transactionList;
-    public Miner (ConcurrentLinkedQueue<Transaction> toMiner) {
+    PublicKey minersKey;
+
+    public Miner (ConcurrentLinkedQueue<Transaction> toMiner, PublicKey minersKey) {
         transactionsToMiner = toMiner;
+        this.minersKey = minersKey;
     }
+
     @Override
     public void run() {
         BlockChain chain = new BlockChain();
 
         if (chain.getBlockChain().isEmpty()) {
-            Block block = new Block("0", 1, 500000);
+            Block block = new Block("0", 1, 5000000);
             mineBlock(block);
             chain.add(block);
         }
@@ -25,11 +32,13 @@ public class Miner implements Runnable {
         while(true) {
             Block block;
             setListOfTransactions();
-            if(!transactionList.isEmpty()) {
-                block = new Block(chain.getPrevious().hash, chain.getPrevious().blockNumber + 1, chain.calculateDifficulty(), transactionList);
-            } else {
-                block = new Block(chain.getPrevious().hash, chain.getPrevious().blockNumber + 1, chain.calculateDifficulty());
-            }
+            // creating reward for miner
+            Transaction reward = new Transaction(TransactionType.COINBASE);
+            reward.addUTXOs(5,minersKey,minersKey);
+            reward.outputs.get(0).applySig(Wallet.getPrivateFromPublic(minersKey));
+            transactionList.add(reward);
+
+            block = new Block(chain.getPrevious().hash, chain.getPrevious().blockNumber + 1, chain.calculateDifficulty(), transactionList);
 
             mineBlock(block);
             chain.add(block);
@@ -47,6 +56,7 @@ public class Miner implements Runnable {
 
         }
         System.out.println("Nice you've mined a block: " + block.hash);
+        System.out.println("And you earned " + block.transactionlist.get(0).outputs.get(0).value + " LeetCoins!!!");
     }
 
     public void setListOfTransactions() {

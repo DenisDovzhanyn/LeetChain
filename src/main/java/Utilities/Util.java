@@ -1,8 +1,12 @@
 package Utilities;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Base32;
 
 import java.security.*;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -37,6 +41,19 @@ public class Util {
         return Base32.toBase32String(publicEncoded);
     }
 
+    public static PublicKey stringToKey(String keyInStringForm) {
+        try {
+            Security.addProvider(new BouncyCastleProvider());
+            byte[] keyBytes = Base32.decode(keyInStringForm);
+            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
+            KeyFactory makeKey = KeyFactory.getInstance("EC", "BC");
+            PublicKey key = makeKey.generatePublic(keySpec);
+
+            return key;
+        } catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeySpecException e) {
+            throw new RuntimeException("error turning string back to key", e);
+        }
+    }
     public static byte[] applySignature(PrivateKey privateKey, String input) {
         try {
             Signature signature = Signature.getInstance("ECDSA", "BC");

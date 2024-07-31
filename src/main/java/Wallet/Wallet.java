@@ -117,7 +117,7 @@ public class Wallet implements Runnable{
             if publicKey matches a file name, go into that file, then convert the data in file (private key in string form)
             and convert that into a PrivateKey which can be used for signing transactions
          */
-    public PrivateKey getPrivateFromPublic(PublicKey pk){
+    public static PrivateKey getPrivateFromPublic(PublicKey pk){
         String searchFor = Util.keyToString(pk);
         File[] keyDir = new File("Keys/").listFiles();
 
