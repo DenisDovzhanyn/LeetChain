@@ -11,18 +11,22 @@ import org.rocksdb.RocksDBException;
 import java.io.*;
 import java.security.PublicKey;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class Ledger {
     private static Ledger instance;
-    private RocksDB db;
-
+    private RocksDB blocksDb;
+    private RocksDB keysAndTransactionDb;
     //loads db and assigns it to db variable
     public Ledger() {
         RocksDB.loadLibrary();
         Options options = new Options().setCreateIfMissing(true);
         try {
-            this.db = RocksDB.open(options, "DataBase");
+            this.blocksDb = RocksDB.open(options, "BlockDataBase");
+            this.keysAndTransactionDb = RocksDB.open(options, "keyAndTransactionDatabase");
         } catch (RocksDBException e) {
             throw new RuntimeException("Error opening RocksDB", e);
         }
@@ -50,8 +54,8 @@ public class Ledger {
             byte[] latestBlockHashKey = "latestBlockHash".getBytes();
             byte[] latestBlockHash = block.hash.getBytes();
 
-            db.put(keyBytes, blockBytes);
-            db.put(latestBlockHashKey,latestBlockHash);
+            blocksDb.put(keyBytes, blockBytes);
+            blocksDb.put(latestBlockHashKey,latestBlockHash);
         } catch (IOException | RocksDBException e){
             throw new RuntimeException("error adding to db", e);
         }
@@ -61,7 +65,7 @@ public class Ledger {
     public Block getBlockByKey(String key) {
         Block gottenBlock = null;
         try{
-            byte[] blockBytes = db.get(key.getBytes());
+            byte[] blockBytes = blocksDb.get(key.getBytes());
 
             if(blockBytes != null) gottenBlock = deserializeBlock(blockBytes);
 
@@ -84,10 +88,10 @@ public class Ledger {
                 byte[] value = null;
 
                 if (i == 0) {
-                    byte[] latestHash = db.get(latestBlockHashKey.getBytes());
-                    if(latestHash != null) value = db.get(latestHash);
+                    byte[] latestHash = blocksDb.get(latestBlockHashKey.getBytes());
+                    if(latestHash != null) value = blocksDb.get(latestHash);
                 } else {
-                    value = db.get(previousHash.getBytes());
+                    value = blocksDb.get(previousHash.getBytes());
                 }
 
                 if (value != null) {
@@ -116,16 +120,16 @@ public class Ledger {
     }
 
     // ADD A PUT/REMOVE/GET METHOD FOR UTXOS!!!!!!!
-    public ArrayList<TransactionOutput> getUTXOList(PublicKey key) {
-        ArrayList<TransactionOutput> output;
+    public List<TransactionOutput> getUTXOList(PublicKey key) {
+        List<TransactionOutput> output;
 
         try {
-            byte[] listByte = db.get(Util.keyToString(key).getBytes());
+            byte[] listByte = keysAndTransactionDb.get(Util.keyToString(key).getBytes());
 
             ByteArrayInputStream byteArray = new ByteArrayInputStream(listByte);
             ObjectInputStream ois = new ObjectInputStream(byteArray);
 
-            output = (ArrayList<TransactionOutput>) ois.readObject();
+            output = (List<TransactionOutput>) ois.readObject();
 
             return output;
         } catch (RocksDBException | IOException | ClassNotFoundException e) {
@@ -133,17 +137,29 @@ public class Ledger {
         }
     }
 
-    public void addOrUpdateUTXOList(String publicKey, ArrayList<TransactionOutput> list) {
+    public void addOrUpdateUTXOList(PublicKey publicKey, List<TransactionOutput> usedUTXOs) {
+        List<TransactionOutput> previousUTXOs = getUTXOList(publicKey);
+        // helps with filtering and reduces time complexity
+        Map<TransactionOutput, Integer> usedUTXOMap = new HashMap<>();
+        for (TransactionOutput x : usedUTXOs) {
+            usedUTXOMap.put(x, 1);
+        }
+        List<TransactionOutput> newUTXOs = previousUTXOs
+                .stream()
+                .filter(x -> usedUTXOMap.get(x) == null)
+                .collect(Collectors.toList());
+
         byte[] utxoList = null;
-        byte[] key = publicKey.getBytes();
+        byte[] key = Util.keyToString(publicKey).getBytes();
+
         try {
             ByteArrayOutputStream byteArray = new ByteArrayOutputStream();
             ObjectOutputStream obs = new ObjectOutputStream(byteArray);
 
-            obs.writeObject(list);
+            obs.writeObject(usedUTXOs);
             utxoList = byteArray.toByteArray();
 
-            db.put(key, utxoList);
+            keysAndTransactionDb.put(key, utxoList);
 
         } catch (RocksDBException | IOException e) {
             throw new RuntimeException("error adding UTXO list to db",e);
@@ -152,7 +168,7 @@ public class Ledger {
 
     public void deleteBlockByKey(String key) {
         try {
-            db.delete(key.getBytes());
+            keysAndTransactionDb.delete(key.getBytes());
         } catch (RocksDBException e) {
             throw new RuntimeException(e);
         }

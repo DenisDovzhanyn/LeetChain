@@ -31,6 +31,7 @@ public class Wallet implements Runnable{
     public void run(){
         Security.addProvider(new BouncyCastleProvider());
         this.publicKeys = createListFromFiles();
+        printBalance();
 
 
     }
@@ -151,13 +152,15 @@ public class Wallet implements Runnable{
     //prints Balance of all keys in key : balance format
     public void printBalance() {
         for (PublicKey key : publicKeys) {
-            ArrayList<TransactionOutput> unspent = Ledger.getInstance().getUTXOList(key);
+            List<TransactionOutput> unspent = Ledger.getInstance().getUTXOList(key);
             float totalAmountOnKey = 0;
 
-            for (TransactionOutput x : unspent) {
-                if(x == null) continue;
+            if(unspent != null) {
+                for (TransactionOutput x : unspent) {
+                    if (x == null) continue;
 
-                totalAmountOnKey += x.getValue();
+                    totalAmountOnKey += x.getValue();
+                }
             }
             System.out.println(Util.keyToString(key) + " : " + totalAmountOnKey);
         }

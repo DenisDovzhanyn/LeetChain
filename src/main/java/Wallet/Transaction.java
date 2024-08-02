@@ -30,7 +30,7 @@ public class Transaction implements Serializable {
 
 
 
-    public ArrayList<TransactionOutput> gatherUTXOs(PublicKey key) {
+    public List<TransactionOutput> gatherUTXOs(PublicKey key) {
         return Ledger.getInstance().getUTXOList(key);
     }
 
@@ -39,7 +39,7 @@ public class Transaction implements Serializable {
     public boolean addUTXOs(float amount, PublicKey sender, PublicKey receiver) {
         float temp = 0;
         if (!type.equals(TransactionType.COINBASE)) {
-            ArrayList<TransactionOutput> UTXO = gatherUTXOs(sender);
+            List<TransactionOutput> UTXO = gatherUTXOs(sender);
 
             for (TransactionOutput input : UTXO) {
                 if (temp >= amount) break;

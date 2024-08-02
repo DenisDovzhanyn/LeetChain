@@ -1,5 +1,6 @@
 package Miner;
 
+import Node.Ledger;
 import Wallet.Transaction;
 import Wallet.TransactionType;
 import Wallet.Wallet;
@@ -32,7 +33,7 @@ public class Miner implements Runnable {
         while(true) {
             Block block;
             setListOfTransactions();
-            // creating reward for miner
+            // creating reward for miner doing this for testing
             Transaction reward = new Transaction(TransactionType.COINBASE);
             reward.addUTXOs(5,minersKey,minersKey);
             reward.outputs.get(0).applySig(Wallet.getPrivateFromPublic(minersKey));
@@ -42,6 +43,7 @@ public class Miner implements Runnable {
 
             mineBlock(block);
             chain.add(block);
+            Ledger.getInstance().addOrUpdateUTXOList();
         }
 
 

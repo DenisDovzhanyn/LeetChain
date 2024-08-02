@@ -33,3 +33,5 @@ bin/
 /Keys/
 /target/
 /.idea/
+/keyAndTransactionDatabase/
+/BlockDataBase/
