@@ -10,10 +10,7 @@ import org.rocksdb.RocksDBException;
 
 import java.io.*;
 import java.security.PublicKey;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Ledger {
@@ -137,16 +134,19 @@ public class Ledger {
         }
     }
 
+
+    // YOU NEED TO ADD FUNCTIONALITY SO THAT IT CAN PROCESS ADDING THE CHANGE TRANSACTION TO THE SENDER, HOW WILL YOU DO THIS
+    // I CANT FIGURE IT OUT RIGHT NOW BUT THIS IS A REMINDER I AM TIRED
     public void addOrUpdateUTXOList(PublicKey publicKey, List<TransactionOutput> usedUTXOs) {
         List<TransactionOutput> previousUTXOs = getUTXOList(publicKey);
         // helps with filtering and reduces time complexity
-        Map<TransactionOutput, Integer> usedUTXOMap = new HashMap<>();
+        Set<TransactionOutput> usedUTXOSet = new HashSet<>();
         for (TransactionOutput x : usedUTXOs) {
-            usedUTXOMap.put(x, 1);
+            usedUTXOSet.add(x);
         }
         List<TransactionOutput> newUTXOs = previousUTXOs
                 .stream()
-                .filter(x -> usedUTXOMap.get(x) == null)
+                .filter(x -> !usedUTXOSet.contains(x))
                 .collect(Collectors.toList());
 
         byte[] utxoList = null;
