@@ -1,6 +1,7 @@
 package Node;
 
 import Miner.Block;
+import Wallet.Transaction;
 import Wallet.TransactionOutput;
 import Utilities.Util;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
@@ -118,57 +119,95 @@ public class Ledger {
 
     // ADD A PUT/REMOVE/GET METHOD FOR UTXOS!!!!!!!
     public List<TransactionOutput> getUTXOList(PublicKey key) {
-        List<TransactionOutput> output;
+        List<TransactionOutput> output = new ArrayList<>();
 
         try {
+
             byte[] listByte = keysAndTransactionDb.get(Util.keyToString(key).getBytes());
+            if(listByte != null) {
 
-            ByteArrayInputStream byteArray = new ByteArrayInputStream(listByte);
-            ObjectInputStream ois = new ObjectInputStream(byteArray);
+                ByteArrayInputStream byteArray = new ByteArrayInputStream(listByte);
+                ObjectInputStream ois = new ObjectInputStream(byteArray);
 
-            output = (List<TransactionOutput>) ois.readObject();
+                output = (List<TransactionOutput>) ois.readObject();
 
-            return output;
+                return output;
+            }
         } catch (RocksDBException | IOException | ClassNotFoundException e) {
             throw new RuntimeException("error getting utxo list", e);
         }
+        return output;
     }
 
 
-    // YOU NEED TO ADD FUNCTIONALITY SO THAT IT CAN PROCESS ADDING THE CHANGE TRANSACTION TO THE SENDER, HOW WILL YOU DO THIS
-    // I CANT FIGURE IT OUT RIGHT NOW BUT THIS IS A REMINDER I AM TIRED
-    public void addOrUpdateUTXOList(PublicKey publicKey, List<TransactionOutput> usedUTXOs) {
-        List<TransactionOutput> previousUTXOs = getUTXOList(publicKey);
-        // helps with filtering and reduces time complexity
-        Set<TransactionOutput> usedUTXOSet = new HashSet<>();
-        for (TransactionOutput x : usedUTXOs) {
-            usedUTXOSet.add(x);
+    public void addOrUpdateUTXOList (List<Transaction> transactionList) {
+
+        for(Transaction x : transactionList) {
+            List<TransactionOutput> sendersFilteredUTXOs = filterUsedOutputs(x.inputs);
+
+            Map<PublicKey, List<TransactionOutput>> publicKeyToUXTOList = addToListsUTXOs(sendersFilteredUTXOs, x.outputs);
+
+            for (Map.Entry<PublicKey, List<TransactionOutput>> y : publicKeyToUXTOList.entrySet()) {
+                writeUTXOListToDB(y.getKey(), y.getValue());
+            }
+
         }
-        List<TransactionOutput> newUTXOs = previousUTXOs
-                .stream()
-                .filter(x -> !usedUTXOSet.contains(x))
+    }
+
+    public List<TransactionOutput> filterUsedOutputs(List<TransactionOutput> transactionInputs) {
+        List<TransactionOutput> sendersUnFilteredUTXOList = getUTXOList(transactionInputs.get(0).getReceiver());
+
+        Set<TransactionOutput> usedUTXOs = new HashSet<>();
+        for(TransactionOutput x : transactionInputs) {
+            usedUTXOs.add(x);
+        }
+
+        List<TransactionOutput> sendersFilteredUTXOList = sendersUnFilteredUTXOList.stream()
+                .filter(x -> !usedUTXOs.contains(x))
                 .collect(Collectors.toList());
 
-        byte[] utxoList = null;
-        byte[] key = Util.keyToString(publicKey).getBytes();
+        return sendersFilteredUTXOList;
+    }
 
+
+    public Map<PublicKey, List<TransactionOutput>> addToListsUTXOs (List<TransactionOutput> sendersFilteredList, List<TransactionOutput> transactionOutputs) {
+        PublicKey fromFundsKey = transactionOutputs.get(0).getSender();
+        PublicKey toFundsKey = transactionOutputs.get(0).getReceiver();
+
+        Map<PublicKey, List<TransactionOutput>> keyUXTOValuePairs = new HashMap<>();
+        List<TransactionOutput> receiversUTXOList = getUTXOList(toFundsKey);
+
+        for(TransactionOutput x : transactionOutputs) {
+            if(x.getReceiver().equals(toFundsKey)) receiversUTXOList.add(x);
+            else sendersFilteredList.add(x);
+        }
+        if(!sendersFilteredList.isEmpty())  keyUXTOValuePairs.put(fromFundsKey, sendersFilteredList);
+        if(!receiversUTXOList.isEmpty()) keyUXTOValuePairs.put(toFundsKey, receiversUTXOList);
+
+        return keyUXTOValuePairs;
+    }
+
+    private void writeUTXOListToDB(PublicKey key, List<TransactionOutput> UTXO) {
         try {
-            ByteArrayOutputStream byteArray = new ByteArrayOutputStream();
-            ObjectOutputStream obs = new ObjectOutputStream(byteArray);
-
-            obs.writeObject(usedUTXOs);
-            utxoList = byteArray.toByteArray();
-
-            keysAndTransactionDb.put(key, utxoList);
-
-        } catch (RocksDBException | IOException e) {
-            throw new RuntimeException("error adding UTXO list to db",e);
+            ByteArrayOutputStream byt = new ByteArrayOutputStream();
+            ObjectOutputStream obs = new ObjectOutputStream(byt);
+            obs.writeObject(UTXO);
+            byte[] bytes = byt.toByteArray();
+            byte[] keyBytes = Util.keyToString(key).getBytes();
+            keysAndTransactionDb.put(keyBytes, bytes);
+        } catch (IOException | RocksDBException e) {
+            throw new RuntimeException(e);
         }
     }
+
+
+
+
+
 
     public void deleteBlockByKey(String key) {
         try {
-            keysAndTransactionDb.delete(key.getBytes());
+            blocksDb.delete(key.getBytes());
         } catch (RocksDBException e) {
             throw new RuntimeException(e);
         }

@@ -47,6 +47,8 @@ public class Transaction implements Serializable {
                 temp += input.getValue();
             }
             if (temp < amount) return false;
+        } else {
+            inputs.add(new TransactionOutput(sender,receiver,amount));
         }
         createOutputs(amount, temp, sender, receiver);
 
@@ -54,12 +56,12 @@ public class Transaction implements Serializable {
     }
 
     public void createOutputs(float amount, float temp, PublicKey sender, PublicKey receiver) {
+        outputs.add(new TransactionOutput(sender, receiver, amount));
+
         if(temp > amount) {
             float change = temp - amount;
             outputs.add(new TransactionOutput(sender, sender, change));
         }
-
-        outputs.add(new TransactionOutput(sender, receiver, amount));
     }
 
     public void determineType() {

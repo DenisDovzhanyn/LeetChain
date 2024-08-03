@@ -25,7 +25,7 @@ public class Miner implements Runnable {
         BlockChain chain = new BlockChain();
 
         if (chain.getBlockChain().isEmpty()) {
-            Block block = new Block("0", 1, 5000000);
+            Block block = new Block("0", 1, 10000000);
             mineBlock(block);
             chain.add(block);
         }
@@ -43,7 +43,8 @@ public class Miner implements Runnable {
 
             mineBlock(block);
             chain.add(block);
-            Ledger.getInstance().addOrUpdateUTXOList();
+            Ledger.getInstance().addOrUpdateUTXOList(block.transactionlist);
+
         }
 
 
@@ -58,7 +59,7 @@ public class Miner implements Runnable {
 
         }
         System.out.println("Nice you've mined a block: " + block.hash);
-        System.out.println("And you earned " + block.transactionlist.get(0).outputs.get(0).value + " LeetCoins!!!");
+//        System.out.println("And you earned " + block.transactionlist.get(0).outputs.get(0).value + " LeetCoins!!!");
     }
 
     public void setListOfTransactions() {

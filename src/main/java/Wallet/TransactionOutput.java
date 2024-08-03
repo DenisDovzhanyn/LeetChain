@@ -42,4 +42,8 @@ public class TransactionOutput implements Serializable {
     public void setValue(float value) {
         this.value = value;
     }
+
+    public PublicKey getSender() {
+        return sender;
+    }
 }
