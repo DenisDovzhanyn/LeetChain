@@ -9,14 +9,14 @@ public class TransactionOutput implements Serializable {
     public String Id;
     private PublicKey sender;
     private PublicKey receiver;
-    public float value;
+    public double value;
     public byte[] signature;
 
-    public TransactionOutput(PublicKey sender, PublicKey receiver, float value) {
+    public TransactionOutput(PublicKey sender, PublicKey receiver, double value) {
         this.receiver = receiver;
         this.sender = sender;
         this.value = value;
-        this.Id = Util.hash(Util.keyToString(sender) + Util.keyToString(receiver) + Float.toString(value));
+        this.Id = Util.hash(Util.keyToString(sender) + Util.keyToString(receiver) + Double.toString(value));
     }
 
     public void applySig(PrivateKey key) {
@@ -35,11 +35,11 @@ public class TransactionOutput implements Serializable {
         this.receiver = receiver;
     }
 
-    public float getValue() {
+    public double getValue() {
         return value;
     }
 
-    public void setValue(float value) {
+    public void setValue(double value) {
         this.value = value;
     }
 

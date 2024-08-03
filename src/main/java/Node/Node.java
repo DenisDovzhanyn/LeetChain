@@ -11,12 +11,11 @@ public class Node implements Runnable{
     public Node (ConcurrentLinkedQueue<Transaction> foward) {
         toMinerAndOtherNodes = foward;
     }
+
     @Override
     public void run() {
 
     }
-
-
 
     public boolean verifyIncomingBlock(Block block){
         Block latestLocallyStoredBlock = Ledger.getInstance().getBlockByKey("latestBlockHash");
@@ -26,4 +25,5 @@ public class Node implements Runnable{
         //if (!block.merkleroot.equals(Util.getMerkleRoot(Util.getTransactionHashList(block.transactions)))) return false;
         return true;
     }
+
 }

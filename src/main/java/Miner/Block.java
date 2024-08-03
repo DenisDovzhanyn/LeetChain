@@ -72,6 +72,18 @@ public class Block implements Serializable {
                 .subtract(BigInteger.valueOf(1));
     }
 
+    public static double calculateReward(int blockNumber) {
+        final int MAX_BLOCK = 1000000;
+        final double INITIAL_REWARD = 100;
+        final double K = 10; // decay constant
+        final double X = 1.5f; //polynomial influence
+
+        if(blockNumber > MAX_BLOCK) return 0;
+
+        double reward = INITIAL_REWARD * Math.exp(-K * Math.pow((double)blockNumber / MAX_BLOCK, X));
+        return reward;
+    }
+
     public long getTimeStamp() {
         return timeStamp;
     }

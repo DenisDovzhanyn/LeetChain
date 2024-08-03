@@ -35,7 +35,7 @@ public class Miner implements Runnable {
             setListOfTransactions();
             // creating reward for miner doing this for testing
             Transaction reward = new Transaction(TransactionType.COINBASE);
-            reward.addUTXOs(5,minersKey,minersKey);
+            reward.addUTXOs(Block.calculateReward(chain.getPrevious().blockNumber + 1),minersKey,minersKey);
             reward.outputs.get(0).applySig(Wallet.getPrivateFromPublic(minersKey));
             transactionList.add(reward);
 
@@ -43,7 +43,7 @@ public class Miner implements Runnable {
 
             mineBlock(block);
             chain.add(block);
-            Ledger.getInstance().addOrUpdateUTXOList(block.transactionlist);
+
 
         }
 

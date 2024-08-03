@@ -36,8 +36,8 @@ public class Transaction implements Serializable {
 
     // we only add UTXOs (transactionOutputs) until we reach the amount the person is trying to send,
     // we then add this to our input list which we will use to remove the inputs from the DB AFTER the transaction has gone through (block mined/signature verified)
-    public boolean addUTXOs(float amount, PublicKey sender, PublicKey receiver) {
-        float temp = 0;
+    public boolean addUTXOs(double amount, PublicKey sender, PublicKey receiver) {
+        double temp = 0;
         if (!type.equals(TransactionType.COINBASE)) {
             List<TransactionOutput> UTXO = gatherUTXOs(sender);
 
@@ -55,11 +55,11 @@ public class Transaction implements Serializable {
         return true;
     }
 
-    public void createOutputs(float amount, float temp, PublicKey sender, PublicKey receiver) {
+    public void createOutputs(double amount, double temp, PublicKey sender, PublicKey receiver) {
         outputs.add(new TransactionOutput(sender, receiver, amount));
 
         if(temp > amount) {
-            float change = temp - amount;
+            double change = temp - amount;
             outputs.add(new TransactionOutput(sender, sender, change));
         }
     }
