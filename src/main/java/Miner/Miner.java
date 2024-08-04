@@ -3,6 +3,7 @@ package Miner;
 import Node.Ledger;
 import Wallet.Transaction;
 import Wallet.TransactionType;
+import Wallet.TransactionOutput;
 import Wallet.Wallet;
 
 import java.security.PublicKey;
@@ -25,7 +26,7 @@ public class Miner implements Runnable {
         BlockChain chain = new BlockChain();
 
         if (chain.getBlockChain().isEmpty()) {
-            Block block = new Block("0", 1, 10000000);
+            Block block = new Block("0", 1, 50000000);
             mineBlock(block);
             chain.add(block);
         }
@@ -35,7 +36,7 @@ public class Miner implements Runnable {
             setListOfTransactions();
             // creating reward for miner doing this for testing
             Transaction reward = new Transaction(TransactionType.COINBASE);
-            reward.addUTXOs(Block.calculateReward(chain.getPrevious().blockNumber + 1),minersKey,minersKey);
+            reward.addUTXOs(Block.calculateReward(chain.getPrevious().blockNumber + 1) + scrapeFees(),minersKey,minersKey);
             reward.outputs.get(0).applySig(Wallet.getPrivateFromPublic(minersKey));
             transactionList.add(reward);
 
@@ -60,6 +61,24 @@ public class Miner implements Runnable {
         }
         System.out.println("Nice you've mined a block: " + block.hash);
 //        System.out.println("And you earned " + block.transactionlist.get(0).outputs.get(0).value + " LeetCoins!!!");
+    }
+
+    public double scrapeFees() {
+        double totalFeesCollected = 0;
+
+        for (Transaction x : transactionList) {
+            double inputtedAmount = 0;
+            double outPuttedAmount = 0;
+            for (TransactionOutput y : x.inputs) {
+                inputtedAmount += y.value;
+            }
+            for (TransactionOutput z : x.outputs) {
+                outPuttedAmount += z.value;
+            }
+            totalFeesCollected += inputtedAmount - outPuttedAmount;
+        }
+
+        return totalFeesCollected;
     }
 
     public void setListOfTransactions() {

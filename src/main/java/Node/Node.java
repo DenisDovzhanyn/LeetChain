@@ -10,6 +10,7 @@ public class Node implements Runnable{
 
     public Node (ConcurrentLinkedQueue<Transaction> foward) {
         toMinerAndOtherNodes = foward;
+        Ledger.getInstance();
     }
 
     @Override

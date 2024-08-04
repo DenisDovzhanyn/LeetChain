@@ -39,7 +39,7 @@ public class Wallet implements Runnable{
 
     public void generateTransaction(PublicKey sender, PublicKey receiver, float amount, TransactionType type) {
         Transaction transaction = new Transaction(type);
-        transaction.addUTXOs(amount,sender,receiver);
+        if (!transaction.addUTXOs(amount,sender,receiver)) System.out.println("not enough funds");
 
         for(TransactionOutput x : transaction.outputs) {
             x.applySig(getPrivateFromPublic(sender));

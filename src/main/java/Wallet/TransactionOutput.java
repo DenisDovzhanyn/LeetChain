@@ -23,6 +23,8 @@ public class TransactionOutput implements Serializable {
         signature = Util.applySignature(key, Id);
     }
 
+
+
     public boolean verifySignature(PublicKey sender, String transactionId, byte[] signature) {
         return Util.verifySignature(sender, transactionId, signature);
     }
