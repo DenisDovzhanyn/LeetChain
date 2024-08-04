@@ -36,12 +36,12 @@ public class Transaction implements Serializable {
 
     // we only add UTXOs (transactionOutputs) until we reach the amount the person is trying to send,
     // we then add this to our input list which we will use to remove the inputs from the DB AFTER the transaction has gone through (block mined/signature verified)
-    public boolean addUTXOs(double amount, PublicKey sender, PublicKey receiver) {
+    public boolean addUTXOs(double amount, double fee, PublicKey sender, PublicKey receiver) {
         double temp = 0;
 
 
         if (!type.equals(TransactionType.COINBASE)) {
-            double fee = calculateFee(amount);
+
             List<TransactionOutput> UTXO = gatherUTXOs(sender);
 
             for (TransactionOutput input : UTXO) {
@@ -54,22 +54,18 @@ public class Transaction implements Serializable {
         } else {
             inputs.add(new TransactionOutput(sender,receiver,amount));
         }
-        createOutputs(amount, temp, sender, receiver);
+        createOutputs(amount, temp, fee, sender, receiver);
 
         return true;
     }
 
-    public void createOutputs(double amount, double temp, PublicKey sender, PublicKey receiver) {
+    public void createOutputs(double amount, double temp, double fee, PublicKey sender, PublicKey receiver) {
         outputs.add(new TransactionOutput(sender, receiver, amount));
 
-        if(temp > amount) {
-            double change = temp - amount;
+        if(temp > amount + fee) {
+            double change = temp - (amount + fee);
             outputs.add(new TransactionOutput(sender, sender, change));
         }
-    }
-
-    public double calculateFee(double amount) {
-        return amount * 0.05;
     }
 
     public void determineType() {

@@ -36,7 +36,7 @@ public class Miner implements Runnable {
             setListOfTransactions();
             // creating reward for miner doing this for testing
             Transaction reward = new Transaction(TransactionType.COINBASE);
-            reward.addUTXOs(Block.calculateReward(chain.getPrevious().blockNumber + 1) + scrapeFees(),minersKey,minersKey);
+            reward.addUTXOs(Block.calculateReward(chain.getPrevious().blockNumber + 1) + scrapeFees(),0, minersKey, minersKey);
             reward.outputs.get(0).applySig(Wallet.getPrivateFromPublic(minersKey));
             transactionList.add(reward);
 
@@ -67,14 +67,9 @@ public class Miner implements Runnable {
         double totalFeesCollected = 0;
 
         for (Transaction x : transactionList) {
-            double inputtedAmount = 0;
-            double outPuttedAmount = 0;
-            for (TransactionOutput y : x.inputs) {
-                inputtedAmount += y.value;
-            }
-            for (TransactionOutput z : x.outputs) {
-                outPuttedAmount += z.value;
-            }
+            double inputtedAmount = x.inputs.stream().mapToDouble(y -> y.value).sum();
+            double outPuttedAmount = x.outputs.stream().mapToDouble(z -> z.value).sum();
+
             totalFeesCollected += inputtedAmount - outPuttedAmount;
         }
 

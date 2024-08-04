@@ -37,9 +37,9 @@ public class Wallet implements Runnable{
     }
 
 
-    public void generateTransaction(PublicKey sender, PublicKey receiver, float amount, TransactionType type) {
+    public void generateTransaction(PublicKey sender, PublicKey receiver, double amount, double fee, TransactionType type) {
         Transaction transaction = new Transaction(type);
-        if (!transaction.addUTXOs(amount,sender,receiver)) System.out.println("not enough funds");
+        if (!transaction.addUTXOs(amount, fee, sender, receiver)) System.out.println("not enough funds");
 
         for(TransactionOutput x : transaction.outputs) {
             x.applySig(getPrivateFromPublic(sender));
@@ -153,7 +153,7 @@ public class Wallet implements Runnable{
     public void printBalance() {
         for (PublicKey key : publicKeys) {
             List<TransactionOutput> unspent = Ledger.getInstance().getUTXOList(key);
-            float totalAmountOnKey = 0;
+            double totalAmountOnKey = 0;
 
             if(unspent != null) {
                 for (TransactionOutput x : unspent) {
