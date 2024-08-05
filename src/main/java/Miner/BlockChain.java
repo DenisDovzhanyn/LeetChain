@@ -1,4 +1,7 @@
+package Miner;
+
 import org.apache.commons.collections4.queue.CircularFifoQueue;
+import Node.Ledger;
 
 public class BlockChain {
 
@@ -6,13 +9,13 @@ public class BlockChain {
     private static CircularFifoQueue<Block> blockChain = new CircularFifoQueue<Block>(20);
 
     public BlockChain(){
-        Ledger.getInstance();
         blockChain = Ledger.getInstance().generateList();
     }
 
     public void add(Block block){
         if(!checkIfBlockExist(block) && isChainValid() || !checkIfBlockExist(block) && blockChain.size() == 1){
             Ledger.getInstance().addBlock(block, block.hash);
+            Ledger.getInstance().addOrUpdateUTXOList(block.transactionlist);
             blockChain.add(block);
 
         }

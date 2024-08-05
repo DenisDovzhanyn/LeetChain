@@ -1,3 +1,5 @@
+package Wallet;
+
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Base32;
 
@@ -12,20 +14,40 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
+import Utilities.Util;
+import Node.Ledger;
 
-public class Wallet {
+public class Wallet implements Runnable{
     private List<PublicKey> publicKeys = new ArrayList<PublicKey>();
+    ConcurrentLinkedQueue<Transaction> toNode;
 
+    public Wallet (ConcurrentLinkedQueue<Transaction> toNode) {
+        this.toNode = toNode;
+    }
 
-
-    public Wallet(){
+    @Override
+    public void run(){
         Security.addProvider(new BouncyCastleProvider());
         this.publicKeys = createListFromFiles();
+        printBalance();
+
 
     }
 
-    public void generateKeyPair() {
+
+    public void generateTransaction(PublicKey sender, PublicKey receiver, double amount, double fee, TransactionType type) {
+        Transaction transaction = new Transaction(type);
+        if (!transaction.addUTXOs(amount, fee, sender, receiver)) System.out.println("not enough funds");
+
+        for(TransactionOutput x : transaction.outputs) {
+            x.applySig(getPrivateFromPublic(sender));
+        }
+        toNode.add(transaction);
+    }
+
+    public PublicKey generateKeyPair() {
         try {
             PublicKey publicKey;
             PrivateKey privateKey;
@@ -40,6 +62,8 @@ public class Wallet {
             publicKeys.add(keyPair.getPublic());
 
             writeKeyToFile(publicKey, privateKey);
+
+            return publicKey;
         } catch(GeneralSecurityException e){
             throw new RuntimeException("error generating key pair", e);
         }
@@ -47,13 +71,13 @@ public class Wallet {
         // we use Base32 instead of Base64 because 64 uses / which can cause problems when creating files
     public void writeKeyToFile(PublicKey publicKey, PrivateKey privateKey) {
         try {
-            String path = "Keys/" + keyToString(publicKey);
+            String path = "Keys/" + Util.keyToString(publicKey);
 
             File keyPair = new File(path);
             keyPair.createNewFile();
 
             PrintWriter writer = new PrintWriter(keyPair);
-            writer.println(keyToString(privateKey));
+            writer.println(Util.keyToString(privateKey));
             writer.close();
 
         } catch(IOException e) {
@@ -69,30 +93,33 @@ public class Wallet {
         File[] keys = new File("Keys/").listFiles();
 
         if (keys.length == 0) {
-            generateKeyPair();
-        } else {
-            try {
-                for (File file : keys) {
-                    byte[] encoded = Base32.decode(file.getName());
+            listOfKeys.add(generateKeyPair());
 
-                    X509EncodedKeySpec keySpec = new X509EncodedKeySpec(encoded);
-                    KeyFactory keyFactory = KeyFactory.getInstance("EC", "BC");
-                    PublicKey toKey = keyFactory.generatePublic(keySpec);
-
-                    listOfKeys.add(toKey);
-                }
-            } catch (NoSuchAlgorithmException | InvalidKeySpecException | NoSuchProviderException e) {
-                throw new RuntimeException(e);
-            }
+            return listOfKeys;
         }
+
+        try {
+            for (File file : keys) {
+                byte[] encoded = Base32.decode(file.getName());
+
+                X509EncodedKeySpec keySpec = new X509EncodedKeySpec(encoded);
+                KeyFactory keyFactory = KeyFactory.getInstance("EC", "BC");
+                PublicKey toKey = keyFactory.generatePublic(keySpec);
+
+                listOfKeys.add(toKey);
+            }
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException | NoSuchProviderException e) {
+            throw new RuntimeException("Error getting keys from file", e);
+        }
+
         return listOfKeys;
     }
         /* take in publicKey, convert that to string, compare string with filenames in Keys folder
             if publicKey matches a file name, go into that file, then convert the data in file (private key in string form)
             and convert that into a PrivateKey which can be used for signing transactions
          */
-    public PrivateKey getPrivateFromPublic(PublicKey pk){
-        String searchFor = keyToString(pk);
+    public static PrivateKey getPrivateFromPublic(PublicKey pk){
+        String searchFor = Util.keyToString(pk);
         File[] keyDir = new File("Keys/").listFiles();
 
         for (File file : keyDir) {
@@ -106,6 +133,7 @@ public class Wallet {
 
                     PrivateKey decodedKey = keyFac.generatePrivate(keySpec);
 
+                    reader.close();
                     return decodedKey;
                 } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException | NoSuchProviderException e) {
                     throw new RuntimeException("error reading private key", e);
@@ -117,15 +145,37 @@ public class Wallet {
         return null;
     }
 
-
-    public String keyToString(Key key){
-        byte[] publicEncoded = key.getEncoded();
-
-        return Base32.toBase32String(publicEncoded);
-    }
-
     public PublicKey getPublicByIndex(int index){
         return publicKeys.get(index);
+    }
+
+    //prints Balance of all keys in key : balance format
+    public void printBalance() {
+        for (PublicKey key : publicKeys) {
+            List<TransactionOutput> unspent = Ledger.getInstance().getUTXOList(key);
+            double totalAmountOnKey = 0;
+
+            if(unspent != null) {
+                for (TransactionOutput x : unspent) {
+                    if (x == null) continue;
+
+                    totalAmountOnKey += x.getValue();
+                }
+            }
+            System.out.println(Util.keyToString(key) + " : " + totalAmountOnKey);
+        }
+    }
+
+    public boolean removeKey(PublicKey key) {
+        File file = new File("Keys/" + Util.keyToString(key));
+
+        if (file.delete()) return true;
+
+        return false;
+    }
+
+    public void addToKeyList(PublicKey key) {
+        publicKeys.add(key);
     }
 
 }
