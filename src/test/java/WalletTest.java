@@ -36,7 +36,7 @@ public class WalletTest {
 
     @Test
     public void signatureVerifying() {
-        wallet.generateTransaction(wallet.getPublicByIndex(0), wallet.getPublicByIndex(0), 5, TransactionType.COINBASE);
+        wallet.generateTransaction(wallet.getPublicByIndex(0), wallet.getPublicByIndex(0), 5,0, TransactionType.COINBASE);
         String transId = requiredForWallet.peek().outputs.get(0).Id;
         byte[] signature = requiredForWallet.peek().outputs.get(0).signature;
         Assert.assertTrue("signature not verifying", Util.verifySignature(wallet.getPublicByIndex(0),transId, signature));
