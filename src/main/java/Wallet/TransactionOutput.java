@@ -25,13 +25,9 @@ public class TransactionOutput implements Serializable {
         signature = Util.applySignature(key, Id);
     }
 
-
-
     public static boolean verifySignature(PublicKey sender, String transactionId, byte[] signature) {
         return Util.verifySignature(sender, transactionId, signature);
     }
-
-
 
     public PublicKey getReceiver() {
         return receiver;
