@@ -83,4 +83,11 @@ public class Transaction implements Serializable {
         return true;
     }
 
+    public static boolean verifySignatures(List<TransactionOutput> transactionList) {
+        for (TransactionOutput x : transactionList) {
+            if (!x.verifySignature(x.getSender(), x.Id, x.signature)) return false;
+        }
+        return true;
+    }
+
 }

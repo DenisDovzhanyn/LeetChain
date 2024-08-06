@@ -168,7 +168,7 @@ public class Ledger {
                     System.out.println("Not enough money for transaction: " + x.id + ", rejecting block");
                     return false;
                 }
-                if(!TransactionOutput.verifySignatures(inputsAndOutputs)) return false;
+                if(!Transaction.verifySignatures(inputsAndOutputs)) return false;
 
                 List<TransactionOutput> sendersFilteredUTXOs = filterUsedOutputs(x.inputs);
                 Map<PublicKey, List<TransactionOutput>> publicKeyToUXTOList = mapUpdatedListsToMap(sendersFilteredUTXOs, x.outputs);
