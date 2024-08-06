@@ -151,14 +151,8 @@ public class Ledger {
             for(Transaction x : transactionList) {
                 List<TransactionOutput> inputsAndOutputs = Stream.concat(x.inputs.stream(), x.outputs.stream()).collect(Collectors.toList());
 
-                double inputsAmount = x.inputs
-                        .stream()
-                        .mapToDouble(y -> y.value)
-                        .sum();
-                double outputsAmount = x.outputs
-                        .stream()
-                        .mapToDouble(z -> z.value)
-                        .sum();
+                double inputsAmount = getAmount(x.inputs);
+                double outputsAmount = getAmount(x.outputs);
 
                 if (x.type.equals(TransactionType.COINBASE)) {
                     totalCoinBaseTransactions++;
@@ -237,6 +231,13 @@ public class Ledger {
         } catch (IOException | RocksDBException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public double getAmount(List<TransactionOutput> transaction) {
+        return transaction
+                .stream()
+                .mapToDouble(x -> x.value)
+                .sum();
     }
 
 

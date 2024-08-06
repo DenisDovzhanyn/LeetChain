@@ -3,6 +3,8 @@ package Wallet;
 import java.io.Serializable;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.util.List;
+
 import Utilities.Util;
 
 public class TransactionOutput implements Serializable {
