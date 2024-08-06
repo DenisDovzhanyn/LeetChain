@@ -27,8 +27,15 @@ public class TransactionOutput implements Serializable {
 
 
 
-    public boolean verifySignature(PublicKey sender, String transactionId, byte[] signature) {
+    public static boolean verifySignature(PublicKey sender, String transactionId, byte[] signature) {
         return Util.verifySignature(sender, transactionId, signature);
+    }
+
+    public static boolean verifySignatures(List<TransactionOutput> transactionList) {
+        for (TransactionOutput x : transactionList) {
+            if (!x.verifySignature(x.getSender(), x.Id, x.signature)) return false;
+        }
+        return true;
     }
 
     public PublicKey getReceiver() {

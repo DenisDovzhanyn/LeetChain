@@ -142,7 +142,7 @@ public class Ledger {
         return output;
     }
 
-
+    // checks inputs/outputs before adding to db
     public boolean addOrUpdateUTXOList (List<Transaction> transactionList, int blockNumber) {
         final int MAX_COINBASE_TRANSACTIONS = 1;
         int totalCoinBaseTransactions = 0;
@@ -168,13 +168,7 @@ public class Ledger {
                     System.out.println("Not enough money for transaction: " + x.id + ", rejecting block");
                     return false;
                 }
-
-                for (TransactionOutput g : inputsAndOutputs) {
-                    if(!g.verifySignature(g.getSender(), g.Id, g.signature)) {
-                        System.out.println("Signature forged");
-                        return false;
-                    }
-                }
+                if(!TransactionOutput.verifySignatures(inputsAndOutputs)) return false;
 
                 List<TransactionOutput> sendersFilteredUTXOs = filterUsedOutputs(x.inputs);
                 Map<PublicKey, List<TransactionOutput>> publicKeyToUXTOList = mapUpdatedListsToMap(sendersFilteredUTXOs, x.outputs);
@@ -187,6 +181,7 @@ public class Ledger {
         return true;
     }
 
+    // after checks pass list is filtered
     public List<TransactionOutput> filterUsedOutputs(List<TransactionOutput> transactionInputs) {
         List<TransactionOutput> sendersUnFilteredUTXOList = getUTXOListByPublicKey(transactionInputs.get(0).getReceiver());
 
@@ -202,7 +197,7 @@ public class Ledger {
         return sendersFilteredUTXOList;
     }
 
-
+    // after list is filtered new lists are added to a map
     public Map<PublicKey, List<TransactionOutput>> mapUpdatedListsToMap(List<TransactionOutput> sendersFilteredList, List<TransactionOutput> transactionOutputs) {
         PublicKey fromFundsKey = transactionOutputs.get(0).getSender();
         PublicKey toFundsKey = transactionOutputs.get(0).getReceiver();
@@ -239,11 +234,6 @@ public class Ledger {
                 .mapToDouble(x -> x.value)
                 .sum();
     }
-
-
-
-
-
 
     public void deleteBlockByKey(String key) {
         try {
