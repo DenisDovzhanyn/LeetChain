@@ -3,7 +3,9 @@ package Wallet;
 import java.io.Serializable;
 import java.security.PublicKey;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -22,7 +24,7 @@ public class Transaction implements Serializable {
         this.type = type;
     }
 
-    private String calculateID() {
+    public String calculateID() {
         List<TransactionOutput> concatList = Stream.concat(inputs.stream(), outputs.stream()).collect(Collectors.toList());
 
          return Util.hash(Util.getMerkleRoot(concatList, (TransactionOutput x) -> x.Id) + type);
@@ -31,7 +33,7 @@ public class Transaction implements Serializable {
 
 
     public List<TransactionOutput> gatherUTXOs(PublicKey key) {
-        return Ledger.getInstance().getUTXOList(key);
+        return Ledger.getInstance().getUTXOListByPublicKey(key);
     }
 
     // we only add UTXOs (transactionOutputs) until we reach the amount the person is trying to send,
@@ -52,7 +54,7 @@ public class Transaction implements Serializable {
 
             if (temp < amount + fee) return false;
         } else {
-            inputs.add(new TransactionOutput(sender,receiver,amount));
+            inputs.add(new TransactionOutput(sender, receiver, amount));
         }
         createOutputs(amount, temp, fee, sender, receiver);
 
@@ -62,18 +64,23 @@ public class Transaction implements Serializable {
     public void createOutputs(double amount, double temp, double fee, PublicKey sender, PublicKey receiver) {
         outputs.add(new TransactionOutput(sender, receiver, amount));
 
-        if(temp > amount + fee) {
+        if (temp > amount + fee) {
             double change = temp - (amount + fee);
             outputs.add(new TransactionOutput(sender, sender, change));
         }
     }
 
-    public void determineType() {
-       /* if(!sender.equals(receiver)) type = TransactionType.PEER_TO_PEER;
-        if(sender.equals(receiver)) type = TransactionType.COINBASE;
+    //checks if the inputs used are actually usable UTXOs
+    public boolean verifyInputs() {
+        List<TransactionOutput> sendersUTXOSFromDB = Ledger.getInstance().getUTXOListByPublicKey(outputs.get(0).getSender());
+        Set<TransactionOutput> inputSet = new HashSet<TransactionOutput>(inputs);
 
-        */
+        for (TransactionOutput x : sendersUTXOSFromDB) {
+            if (inputSet.contains(x)) inputSet.remove(x);
+        }
+        if (!inputSet.isEmpty()) return false;
 
+        return true;
     }
 
 }

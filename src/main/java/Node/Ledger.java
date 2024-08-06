@@ -4,15 +4,18 @@ import Miner.Block;
 import Wallet.Transaction;
 import Wallet.TransactionOutput;
 import Utilities.Util;
+import Wallet.TransactionType;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
+import Miner.Miner;
 
 import java.io.*;
 import java.security.PublicKey;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Ledger {
     private static Ledger instance;
@@ -118,7 +121,7 @@ public class Ledger {
     }
 
     // ADD A PUT/REMOVE/GET METHOD FOR UTXOS!!!!!!!
-    public List<TransactionOutput> getUTXOList(PublicKey key) {
+    public List<TransactionOutput> getUTXOListByPublicKey(PublicKey key) {
         List<TransactionOutput> output = new ArrayList<>();
 
         try {
@@ -140,22 +143,58 @@ public class Ledger {
     }
 
 
-    public void addOrUpdateUTXOList (List<Transaction> transactionList) {
+    public boolean addOrUpdateUTXOList (List<Transaction> transactionList, int blockNumber) {
+        final int MAX_COINBASE_TRANSACTIONS = 1;
+        int totalCoinBaseTransactions = 0;
+        double scrapedFees = Miner.scrapeFees(transactionList);
 
-        for(Transaction x : transactionList) {
-            List<TransactionOutput> sendersFilteredUTXOs = filterUsedOutputs(x.inputs);
+            for(Transaction x : transactionList) {
+                List<TransactionOutput> inputsAndOutputs = Stream.concat(x.inputs.stream(), x.outputs.stream()).collect(Collectors.toList());
 
-            Map<PublicKey, List<TransactionOutput>> publicKeyToUXTOList = addToListsUTXOs(sendersFilteredUTXOs, x.outputs);
+                double inputsAmount = x.inputs
+                        .stream()
+                        .mapToDouble(y -> y.value)
+                        .sum();
+                double outputsAmount = x.outputs
+                        .stream()
+                        .mapToDouble(z -> z.value)
+                        .sum();
 
-            for (Map.Entry<PublicKey, List<TransactionOutput>> y : publicKeyToUXTOList.entrySet()) {
-                writeUTXOListToDB(y.getKey(), y.getValue());
+                if (x.type.equals(TransactionType.COINBASE)) {
+                    totalCoinBaseTransactions++;
+                    if (totalCoinBaseTransactions > MAX_COINBASE_TRANSACTIONS) {
+                        System.out.println("Too many coinbase transactions for one block, rejecting block");
+                        return false;
+                    }
+                    if (Block.calculateReward(blockNumber) + scrapedFees < outputsAmount) {
+                        System.out.println("Miner messed with block reward or fees, rejecting block");
+                        return false;
+                    }
+                } else if (inputsAmount < outputsAmount || !x.verifyInputs()) {
+                    System.out.println("Not enough money for transaction: " + x.id + ", rejecting block");
+                    return false;
+                }
+
+                for (TransactionOutput g : inputsAndOutputs) {
+                    if(!g.verifySignature(g.getSender(), g.Id, g.signature)) {
+                        System.out.println("Signature forged");
+                        return false;
+                    }
+                }
+
+                List<TransactionOutput> sendersFilteredUTXOs = filterUsedOutputs(x.inputs);
+                Map<PublicKey, List<TransactionOutput>> publicKeyToUXTOList = mapUpdatedListsToMap(sendersFilteredUTXOs, x.outputs);
+
+                for (Map.Entry<PublicKey, List<TransactionOutput>> y : publicKeyToUXTOList.entrySet()) {
+                    writeUTXOListToDB(y.getKey(), y.getValue());
+                }
             }
-
-        }
+        System.out.println("UTXOs successfully added");
+        return true;
     }
 
     public List<TransactionOutput> filterUsedOutputs(List<TransactionOutput> transactionInputs) {
-        List<TransactionOutput> sendersUnFilteredUTXOList = getUTXOList(transactionInputs.get(0).getReceiver());
+        List<TransactionOutput> sendersUnFilteredUTXOList = getUTXOListByPublicKey(transactionInputs.get(0).getReceiver());
 
         Set<TransactionOutput> usedUTXOs = new HashSet<>();
         for(TransactionOutput x : transactionInputs) {
@@ -163,19 +202,19 @@ public class Ledger {
         }
 
         List<TransactionOutput> sendersFilteredUTXOList = sendersUnFilteredUTXOList.stream()
-                .filter(x -> !usedUTXOs.contains(x))
+                .filter(y -> !usedUTXOs.contains(y))
                 .collect(Collectors.toList());
 
         return sendersFilteredUTXOList;
     }
 
 
-    public Map<PublicKey, List<TransactionOutput>> addToListsUTXOs (List<TransactionOutput> sendersFilteredList, List<TransactionOutput> transactionOutputs) {
+    public Map<PublicKey, List<TransactionOutput>> mapUpdatedListsToMap(List<TransactionOutput> sendersFilteredList, List<TransactionOutput> transactionOutputs) {
         PublicKey fromFundsKey = transactionOutputs.get(0).getSender();
         PublicKey toFundsKey = transactionOutputs.get(0).getReceiver();
 
         Map<PublicKey, List<TransactionOutput>> keyUXTOValuePairs = new HashMap<>();
-        List<TransactionOutput> receiversUTXOList = getUTXOList(toFundsKey);
+        List<TransactionOutput> receiversUTXOList = getUTXOListByPublicKey(toFundsKey);
 
         for(TransactionOutput x : transactionOutputs) {
             if(x.getReceiver().equals(toFundsKey)) receiversUTXOList.add(x);

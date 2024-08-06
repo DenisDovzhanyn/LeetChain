@@ -13,11 +13,13 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Miner implements Runnable {
     ConcurrentLinkedQueue<Transaction> transactionsToMiner;
+    ConcurrentLinkedQueue<Block> blocksToNode;
     List<Transaction> transactionList;
     PublicKey minersKey;
 
-    public Miner (ConcurrentLinkedQueue<Transaction> toMiner, PublicKey minersKey) {
+    public Miner (ConcurrentLinkedQueue<Transaction> toMiner, ConcurrentLinkedQueue<Block> blocksToNode, PublicKey minersKey) {
         transactionsToMiner = toMiner;
+        this.blocksToNode = blocksToNode;
         this.minersKey = minersKey;
     }
 
@@ -26,7 +28,7 @@ public class Miner implements Runnable {
         BlockChain chain = new BlockChain();
 
         if (chain.getBlockChain().isEmpty()) {
-            Block block = new Block("0", 1, 50000000);
+            Block block = new Block("0", 1, 100000); //50000000
             mineBlock(block);
             chain.add(block);
         }
@@ -36,8 +38,10 @@ public class Miner implements Runnable {
             setListOfTransactions();
             // creating reward for miner doing this for testing
             Transaction reward = new Transaction(TransactionType.COINBASE);
-            reward.addUTXOs(Block.calculateReward(chain.getPrevious().blockNumber + 1) + scrapeFees(),0, minersKey, minersKey);
+            reward.addUTXOs(Block.calculateReward(chain.getPrevious().blockNumber + 1) + scrapeFees(transactionList),0, minersKey, minersKey);
+            reward.inputs.get(0).applySig(Wallet.getPrivateFromPublic(minersKey));
             reward.outputs.get(0).applySig(Wallet.getPrivateFromPublic(minersKey));
+            reward.calculateID();
             transactionList.add(reward);
 
             block = new Block(chain.getPrevious().hash, chain.getPrevious().blockNumber + 1, chain.calculateDifficulty(), transactionList);
@@ -60,16 +64,27 @@ public class Miner implements Runnable {
 
         }
         System.out.println("Nice you've mined a block: " + block.hash);
+        blocksToNode.add(block);
 //        System.out.println("And you earned " + block.transactionlist.get(0).outputs.get(0).value + " LeetCoins!!!");
     }
 
-    public double scrapeFees() {
+    public static double scrapeFees(List<Transaction> transactions) {
         double totalFeesCollected = 0;
 
-        for (Transaction x : transactionList) {
-            double inputtedAmount = x.inputs.stream().mapToDouble(y -> y.value).sum();
-            double outPuttedAmount = x.outputs.stream().mapToDouble(z -> z.value).sum();
+        for (Transaction x : transactions) {
+            double inputtedAmount = x.inputs
+                    .stream()
+                    .mapToDouble(y -> y.value)
+                    .sum();
+            double outPuttedAmount = x.outputs
+                    .stream()
+                    .mapToDouble(z -> z.value)
+                    .sum();
 
+            if (inputtedAmount < outPuttedAmount) {
+                transactions.remove(x);
+                continue;
+            }
             totalFeesCollected += inputtedAmount - outPuttedAmount;
         }
 

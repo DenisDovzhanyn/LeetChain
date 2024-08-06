@@ -44,6 +44,7 @@ public class Wallet implements Runnable{
         for(TransactionOutput x : transaction.outputs) {
             x.applySig(getPrivateFromPublic(sender));
         }
+        transaction.calculateID();
         toNode.add(transaction);
     }
 
@@ -152,7 +153,7 @@ public class Wallet implements Runnable{
     //prints Balance of all keys in key : balance format
     public void printBalance() {
         for (PublicKey key : publicKeys) {
-            List<TransactionOutput> unspent = Ledger.getInstance().getUTXOList(key);
+            List<TransactionOutput> unspent = Ledger.getInstance().getUTXOListByPublicKey(key);
             double totalAmountOnKey = 0;
 
             if(unspent != null) {

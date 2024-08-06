@@ -15,7 +15,7 @@ public class BlockChain {
     public void add(Block block){
         if(!checkIfBlockExist(block) && isChainValid() || !checkIfBlockExist(block) && blockChain.size() == 1){
             Ledger.getInstance().addBlock(block, block.hash);
-            Ledger.getInstance().addOrUpdateUTXOList(block.transactionlist);
+            Ledger.getInstance().addOrUpdateUTXOList(block.transactionlist, block.blockNumber);
             blockChain.add(block);
 
         }
@@ -23,7 +23,7 @@ public class BlockChain {
 
     //checking if the block is already present on rocksDB
     public boolean checkIfBlockExist(Block block){
-        if(Ledger.getInstance().getBlockByKey(Integer.toString(block.blockNumber)) == null) return false;
+        if(Ledger.getInstance().getBlockByKey(block.hash) == null) return false;
         return true;
     }
 
