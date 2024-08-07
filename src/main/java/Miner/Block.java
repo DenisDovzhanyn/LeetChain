@@ -24,19 +24,19 @@ public class Block implements Serializable {
     public Block(String previousHash, int blockNumber, int difficulty, List<Transaction> transactionlist){
         this.previousHash = previousHash;
         this.timeStamp = new Date().getTime();
-        this.hash = calHash();
         this.blockNumber = blockNumber;
         this.difficulty = difficulty;
         this.transactionlist = transactionlist;
         this.merkleRoot = Util.getMerkleRoot(transactionlist, (Transaction x) -> x.id);
+        this.hash = calHash();
     }
 
     public Block(String previousHash, int blockNumber, int difficulty){
         this.previousHash = previousHash;
         this.timeStamp = new Date().getTime();
-        this.hash = calHash();
         this.blockNumber = blockNumber;
         this.difficulty = difficulty;
+        this.hash = calHash();
     }
 
     public Block(){

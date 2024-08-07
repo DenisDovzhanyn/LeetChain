@@ -109,6 +109,18 @@ public class Ledger {
         return list;
     }
 
+    public Block getLatestBlock() {
+        String latestBlockKey = "latestBlockHash";
+        try {
+            byte[] latestHash = blocksDb.get(latestBlockKey.getBytes());
+            byte[] blockInBytes = blocksDb.get(latestHash);
+
+            return deserializeBlock(blockInBytes);
+        } catch (RocksDBException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public Block deserializeBlock(byte[] value){
         try(ByteArrayInputStream bytArray = new ByteArrayInputStream(value);
             ObjectInputStream ois = new ObjectInputStream(bytArray)){

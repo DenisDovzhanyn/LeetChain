@@ -41,7 +41,7 @@ public class Miner implements Runnable {
             reward.addUTXOs(Block.calculateReward(chain.getPrevious().blockNumber + 1) + scrapeFees(transactionList),0, minersKey, minersKey);
             reward.inputs.get(0).applySig(Wallet.getPrivateFromPublic(minersKey));
             reward.outputs.get(0).applySig(Wallet.getPrivateFromPublic(minersKey));
-            reward.calculateID();
+            reward.id = reward.calculateID();
             transactionList.add(reward);
 
             block = new Block(chain.getPrevious().hash, chain.getPrevious().blockNumber + 1, chain.calculateDifficulty(), transactionList);

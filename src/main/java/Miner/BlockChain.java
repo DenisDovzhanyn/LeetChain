@@ -21,6 +21,10 @@ public class BlockChain {
         }
     }
 
+    public static void nodeAdd(Block block) {
+        blockChain.add(block);
+    }
+
     //checking if the block is already present on rocksDB
     public boolean checkIfBlockExist(Block block){
         if(Ledger.getInstance().getBlockByKey(block.hash) == null) return false;
