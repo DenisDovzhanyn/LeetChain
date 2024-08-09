@@ -86,6 +86,18 @@ public class Node implements Runnable{
         return true;
     }
 
+    public boolean verifyDifficulty(Block block) {
+        BlockChain temporaryBlockChain = new BlockChain();
+        temporaryBlockChain.add(block);
+        if (block.getDifficulty() != temporaryBlockChain.calculateDifficulty()) {
+            temporaryBlockChain.getBlockChain().remove(block);
+            System.out.println("Calculated difficulty not matching incoming blocks difficulty");
+            return false;
+        }
+
+        return true;
+    }
+
     public boolean addOrUpdateTransactions(Block block) {
         if (!Ledger.getInstance().addOrUpdateUTXOList(block.transactionlist, block.blockNumber)) {
             return false;

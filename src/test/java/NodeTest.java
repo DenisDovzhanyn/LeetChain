@@ -2,14 +2,9 @@ import Node.Ledger;
 import Miner.Block;
 import Node.Node;
 import Wallet.Transaction;
-import Wallet.TransactionOutput;
-import Wallet.TransactionType;
-import Wallet.Wallet;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class NodeTest {
@@ -27,7 +22,7 @@ public class NodeTest {
         falseBlock = Ledger.getInstance().getLatestBlock();
         correctBlock = Ledger.getInstance().getLatestBlock();
     }
-
+    // we are testing to make sure that our methods return true/false when given true/false conditions
     @Test
     public void previousHashTest() {
         falseBlock.previousHash = "asdasdads";
@@ -46,12 +41,19 @@ public class NodeTest {
 
     @Test
     public void merkleRootNotMatchingTest() {
-
         falseBlock.transactionlist.get(0).id = "asdasd";
         Assert.assertFalse("Should return false when calculating false merkleRoot", node.verifyMerkleRoot(falseBlock));
         falseBlock.transactionlist.get(0).id = correctBlock.transactionlist.get(0).id;
         Assert.assertTrue("Should return true when calculating correct merkleRoot", node.verifyMerkleRoot(falseBlock));
-
     }
+
+    @Test
+    public void blockDifficultyTest() {
+        falseBlock.setDifficulty(0);
+        Assert.assertFalse("Should return false when given wrong difficulty (0)", node.verifyDifficulty(falseBlock));
+        // testing if it is true is difficult due to the fact that the difficulty depends completely on the time between blocks
+    }
+
+
 
 }
