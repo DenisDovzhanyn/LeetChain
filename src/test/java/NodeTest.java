@@ -5,6 +5,8 @@ import Wallet.Transaction;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.math.BigInteger;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class NodeTest {
@@ -52,6 +54,16 @@ public class NodeTest {
         falseBlock.setDifficulty(0);
         Assert.assertFalse("Should return false when given wrong difficulty (0)", node.verifyDifficulty(falseBlock));
         // testing if it is true is difficult due to the fact that the difficulty depends completely on the time between blocks
+    }
+
+    @Test
+    public void beatTargetHashTest() {
+        //value of the hash is 71,386,622,362,447,003,578,456,328,373,263,341,923,402,970,167,109,806,054,530,861,483,143,478,028,852
+        falseBlock.currentHashValue = new BigInteger("9dd3657b6f964138d557ee18bb2095a19ff5b0a3a777287ead663273bbc6aa34", 16);
+        Assert.assertFalse("Should return false when given an extremely large/impossible hash value", falseBlock.isHashFound(falseBlock.currentHashValue));
+        falseBlock.currentHashValue = new BigInteger(correctBlock.hash, 16);
+        Assert.assertTrue("Should return true when given a hash that beats target hash", falseBlock.isHashFound(falseBlock.currentHashValue));
+
     }
 
 
