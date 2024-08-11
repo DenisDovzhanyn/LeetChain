@@ -2,10 +2,10 @@ package Node;
 
 import java.net.Socket;
 
-public class Connections implements Runnable {
+public class Connection implements Runnable {
     Socket connection;
 
-    public Connections(Socket socket) {
+    public Connection(Socket socket) {
         this.connection = socket;
     }
 
