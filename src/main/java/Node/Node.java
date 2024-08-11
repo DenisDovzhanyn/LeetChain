@@ -6,11 +6,16 @@ import Utilities.Util;
 import Wallet.Transaction;
 import Wallet.TransactionType;
 
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Node implements Runnable{
     ConcurrentLinkedQueue<Transaction> toMinerAndOtherNodes;
     ConcurrentLinkedQueue<Block> blocksToOtherNodes;
+    ConcurrentLinkedQueue<Block> incomingBlocks;
+
+
 
     public Node (ConcurrentLinkedQueue<Transaction> transactionsToMiners, ConcurrentLinkedQueue<Block> blocksToOtherNodes) {
         toMinerAndOtherNodes = transactionsToMiners;
