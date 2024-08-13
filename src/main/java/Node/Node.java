@@ -6,21 +6,30 @@ import Utilities.Util;
 import Wallet.Transaction;
 import Wallet.TransactionType;
 
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Node implements Runnable{
     ConcurrentLinkedQueue<Transaction> toMinerAndOtherNodes;
     ConcurrentLinkedQueue<Block> blocksToOtherNodes;
     ConcurrentLinkedQueue<Block> incomingBlocks;
-
+    SocketHandler server;
+    Thread socketHandler;
 
 
     public Node (ConcurrentLinkedQueue<Transaction> transactionsToMiners, ConcurrentLinkedQueue<Block> blocksToOtherNodes) {
         toMinerAndOtherNodes = transactionsToMiners;
         this.blocksToOtherNodes = blocksToOtherNodes;
         Ledger.getInstance();
+        server = new SocketHandler(blocksToOtherNodes);
+        socketHandler = new Thread(server);
+        socketHandler.start();
+
+        while (server.amountOfConnectedSockets() < 1) {
+            // wait here until we are connected to at least one person
+        }
+
+        // rest of program can continue once we connect to at least one person
+
     }
     // how will we notify miner when a new block comes in and how will he access its data for the next block?
     @Override
