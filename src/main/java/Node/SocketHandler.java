@@ -4,6 +4,7 @@ import Miner.Block;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -24,7 +25,8 @@ public class SocketHandler implements Runnable{
         while (sockets.getPoolSize() < 4) {
             try {
                 server = new ServerSocket(6478);
-                sockets.submit(new Thread(new Connection(server.accept(), blocksToOtherNodes)));
+                Socket socket = server.accept();
+
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

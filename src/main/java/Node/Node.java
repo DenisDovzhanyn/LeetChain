@@ -10,8 +10,10 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Node implements Runnable{
     ConcurrentLinkedQueue<Transaction> toMinerAndOtherNodes;
+    ConcurrentLinkedQueue<Transaction> transactionsToMiner;
     ConcurrentLinkedQueue<Block> blocksToOtherNodes;
     ConcurrentLinkedQueue<Block> incomingBlocks;
+
     SocketHandler server;
     Thread socketHandler;
 
