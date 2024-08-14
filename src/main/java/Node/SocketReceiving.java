@@ -22,8 +22,10 @@ public class SocketReceiving implements Runnable {
     @Override
     public void run() {
         try {
+            ObjectInputStream inputStream = new ObjectInputStream(receiving.getInputStream());
             while (true) {
-                ObjectInputStream inputStream = new ObjectInputStream(receiving.getInputStream());
+                // MOVE THIS TO OUTSIDE WHILE LOOP
+
                 Object object = inputStream.readObject();
 
                 if (object instanceof Block) {
