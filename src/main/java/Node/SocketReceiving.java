@@ -17,10 +17,13 @@ public class SocketReceiving implements Runnable {
     ConcurrentLinkedQueue<BlockListRequest> blockRequest;
     ConcurrentLinkedQueue<PeerListRequest> peerListRequest;
 
-    public SocketReceiving(Socket receiving,ConcurrentLinkedQueue<Transaction> incomingTransactions, ConcurrentLinkedQueue<Block> incomingBlocks) {
+    public SocketReceiving(Socket receiving,ConcurrentLinkedQueue<Transaction> incomingTransactions, ConcurrentLinkedQueue<Block> incomingBlocks,
+                           ConcurrentLinkedQueue<BlockListRequest> blockRequest, ConcurrentLinkedQueue<PeerListRequest> peerRequests) {
         this.receiving = receiving;
         this.incomingTransactions = incomingTransactions;
         this.incomingBlocks = incomingBlocks;
+        this.blockRequest = blockRequest;
+        this.peerListRequest = peerRequests;
     }
 
     @Override

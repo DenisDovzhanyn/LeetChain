@@ -9,7 +9,7 @@ import Wallet.TransactionType;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Node implements Runnable{
-    ConcurrentLinkedQueue<Transaction> toMinerAndOtherNodes;
+    ConcurrentLinkedQueue<Transaction> toOtherNodes;
     ConcurrentLinkedQueue<Transaction> transactionsToMiner;
     ConcurrentLinkedQueue<Block> blocksToOtherNodes;
     ConcurrentLinkedQueue<Block> incomingBlocks;
@@ -18,15 +18,15 @@ public class Node implements Runnable{
     Thread socketHandler;
 
 
-    public Node (ConcurrentLinkedQueue<Transaction> transactionsToMiners, ConcurrentLinkedQueue<Block> blocksToOtherNodes) {
-        toMinerAndOtherNodes = transactionsToMiners;
+    public Node (ConcurrentLinkedQueue<Transaction> transactionsToNodes, ConcurrentLinkedQueue<Block> blocksToOtherNodes) {
+        toOtherNodes = transactionsToNodes;
         this.blocksToOtherNodes = blocksToOtherNodes;
         Ledger.getInstance();
-        server = new SocketHandler(blocksToOtherNodes);
+        server = new SocketHandler(blocksToOtherNodes, incomingBlocks);
         socketHandler = new Thread(server);
         socketHandler.start();
 
-        while (server.amountOfConnectedSockets() < 1) {
+        while (server.amountOfConnectedSockets() <= 1) {
             // wait here until we are connected to at least one person
         }
 
@@ -37,11 +37,7 @@ public class Node implements Runnable{
     @Override
     public void run() {
         while (true) {
-            if (!blocksToOtherNodes.isEmpty()) {
-
-            }
-            /*
-            if(true) {
+            if(!incomingBlocks.isEmpty()) {
                 // notify miner before or after a new block is verified? how long will verification take ? will people try to take advantage of this
                 // and send faulty blocks to set miners back and interrupt their mining?
                 Block incomingBlock = blocksToOtherNodes.poll();
@@ -51,7 +47,7 @@ public class Node implements Runnable{
                     BlockChain.nodeAdd(incomingBlock);
                 }
             }
-            */
+
         }
 
     }

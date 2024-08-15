@@ -9,18 +9,23 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class SocketSendingOut implements Runnable{
     Socket socketOut;
     ConcurrentLinkedQueue<Block> blocksToOtherNodes;
     ConcurrentLinkedQueue<Transaction> transactionsToOtherNodes;
-    ConcurrentLinkedQueue<PeerListRequest> peerListRequest;
+    ConcurrentLinkedQueue<BlockListRequest> blockRequests;
+    ConcurrentLinkedQueue<PeerListRequest> peerRequests;
 
-    public SocketSendingOut(Socket outBound, ConcurrentLinkedQueue<Block> blocksToOtherNodes, ConcurrentLinkedQueue<Transaction> transactionsToOtherNodes) {
+    public SocketSendingOut(Socket outBound, ConcurrentLinkedQueue<Block> blocksToOtherNodes, ConcurrentLinkedQueue<Transaction> transactionsToOtherNodes,
+                            ConcurrentLinkedQueue<BlockListRequest> blockRequests, ConcurrentLinkedQueue<PeerListRequest> peerRequests) {
         this.socketOut = outBound;
         this.blocksToOtherNodes = blocksToOtherNodes;
         this.transactionsToOtherNodes = transactionsToOtherNodes;
+        this.blockRequests = blockRequests;
+        this.peerRequests = peerRequests;
     }
 
     @Override
@@ -29,11 +34,19 @@ public class SocketSendingOut implements Runnable{
             ObjectOutputStream outBound = new ObjectOutputStream(socketOut.getOutputStream());
 
             while (true) {
+                if (!blockRequests.isEmpty()) {
+                    BlockListRequest request = blockRequests.poll();
+                    List<Block> requestedBlocklist = Ledger.getInstance().blockListStartAndEnd(request.start, request.end);
+
+                    for (Block block : requestedBlocklist) {
+                        outBound.writeObject(block);
+                    }
+                }
                 if (!blocksToOtherNodes.isEmpty()) {
-                    outBound.writeObject(blocksToOtherNodes.poll());
+                    outBound.writeObject(blocksToOtherNodes.peek());
                 }
                 if(!transactionsToOtherNodes.isEmpty()) {
-                    outBound.writeObject(transactionsToOtherNodes.poll());
+                    outBound.writeObject(transactionsToOtherNodes.peek());
                 }
             }
         } catch (IOException e) {

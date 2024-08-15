@@ -121,6 +121,20 @@ public class Ledger {
         }
     }
 
+    public List<Block> blockListStartAndEnd(int start, int end) {
+        Block block = getLatestBlock();
+        List<Block> blockList = new ArrayList<>();
+
+        while (block.blockNumber >= start) {
+
+            if (block.blockNumber <= end) blockList.add(block);
+
+            block = getBlockByKey(block.previousHash);
+        }
+
+        return blockList;
+    }
+
     public Block deserializeBlock(byte[] value){
         try(ByteArrayInputStream bytArray = new ByteArrayInputStream(value);
             ObjectInputStream ois = new ObjectInputStream(bytArray)){
@@ -258,6 +272,8 @@ public class Ledger {
             throw new RuntimeException(e);
         }
     }
+
+
 
 
 
