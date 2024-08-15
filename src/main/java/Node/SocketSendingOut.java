@@ -1,6 +1,8 @@
 package Node;
 
 import Miner.Block;
+import Node.RequestTypes.BlockListRequest;
+import Node.RequestTypes.PeerListRequest;
 import Wallet.Transaction;
 
 import java.io.IOException;
@@ -13,6 +15,7 @@ public class SocketSendingOut implements Runnable{
     Socket socketOut;
     ConcurrentLinkedQueue<Block> blocksToOtherNodes;
     ConcurrentLinkedQueue<Transaction> transactionsToOtherNodes;
+    ConcurrentLinkedQueue<PeerListRequest> peerListRequest;
 
     public SocketSendingOut(Socket outBound, ConcurrentLinkedQueue<Block> blocksToOtherNodes, ConcurrentLinkedQueue<Transaction> transactionsToOtherNodes) {
         this.socketOut = outBound;
