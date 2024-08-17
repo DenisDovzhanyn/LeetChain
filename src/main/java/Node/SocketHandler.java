@@ -32,6 +32,10 @@ public class SocketHandler implements Runnable{
             try {
                 server = new ServerSocket(6478);
                 Socket socket = server.accept();
+                // after we connect we want to raise their score on our peer list file ( we will want to connect to the people with the highest scores when starting program )
+                // also I just realized all these connections will only be people trying to connect with us?
+                // what about when WE want to connect with people ?
+                // maybe in this class first we try to connect with people then after that we open up our server and let people connect to us?
 
                 ConcurrentLinkedQueue<BlockListRequest> blockRequests = new ConcurrentLinkedQueue<>();
                 ConcurrentLinkedQueue<PeerListRequest> peerRequests = new ConcurrentLinkedQueue<>();
@@ -49,6 +53,6 @@ public class SocketHandler implements Runnable{
     }
 
     public int amountOfConnectedSockets() {
-        return sockets.getPoolSize();
+        return sockets.getPoolSize() / 2;
     }
 }

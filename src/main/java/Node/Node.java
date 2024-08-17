@@ -9,7 +9,7 @@ import Wallet.TransactionType;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Node implements Runnable{
-    ConcurrentLinkedQueue<Transaction> toOtherNodes;
+    ConcurrentLinkedQueue<Transaction> transactionsToOtherNodes;
     ConcurrentLinkedQueue<Transaction> transactionsToMiner;
     ConcurrentLinkedQueue<Block> blocksToOtherNodes;
     ConcurrentLinkedQueue<Block> incomingBlocks;
@@ -19,7 +19,7 @@ public class Node implements Runnable{
 
 
     public Node (ConcurrentLinkedQueue<Transaction> transactionsToNodes, ConcurrentLinkedQueue<Block> blocksToOtherNodes) {
-        toOtherNodes = transactionsToNodes;
+        transactionsToOtherNodes = transactionsToNodes;
         this.blocksToOtherNodes = blocksToOtherNodes;
         Ledger.getInstance();
         server = new SocketHandler(blocksToOtherNodes, incomingBlocks);

@@ -38,10 +38,21 @@ public class SocketSendingOut implements Runnable{
                     BlockListRequest request = blockRequests.poll();
                     List<Block> requestedBlocklist = Ledger.getInstance().blockListStartAndEnd(request.start, request.end);
 
+                    // why for loop here going through list when I can just send the whole list?
                     for (Block block : requestedBlocklist) {
                         outBound.writeObject(block);
                     }
                 }
+                if (!peerRequests.isEmpty()) {
+                   int amountOfPeers = peerRequests.poll().amountOfPeers;
+                   // do something here where we pull the top n peers from our file then send it
+
+
+                }
+                // we peek here instead of polling() so we dont remove the object,
+                // because this concurrent list is shared with ALL open sockets
+                // is there a way to remove it after the last socket has sent it out?
+                // how ?
                 if (!blocksToOtherNodes.isEmpty()) {
                     outBound.writeObject(blocksToOtherNodes.peek());
                 }
