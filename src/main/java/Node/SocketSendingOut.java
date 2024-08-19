@@ -45,7 +45,7 @@ public class SocketSendingOut implements Runnable{
                 }
                 if (!peerRequests.isEmpty()) {
                    int amountOfPeers = peerRequests.poll().amountOfPeers;
-                   // do something here where we pull the top n peers from our file then send it
+
 
 
                 }
@@ -64,4 +64,6 @@ public class SocketSendingOut implements Runnable{
             throw new RuntimeException(e);
         }
     }
+
+
 }

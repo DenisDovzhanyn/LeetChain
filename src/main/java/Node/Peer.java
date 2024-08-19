@@ -1,6 +1,6 @@
 package Node;
 
-public class Peer {
+public class Peer{
     String ip;
     int port;
     int score;
@@ -38,4 +38,5 @@ public class Peer {
     public void setScore(int score) {
         this.score = score;
     }
+
 }

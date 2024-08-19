@@ -11,11 +11,13 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.stream.Collectors;
 
 public class SocketHandler implements Runnable{
     ServerSocket server;
@@ -23,12 +25,12 @@ public class SocketHandler implements Runnable{
     ConcurrentLinkedQueue<Block> blocksToOtherNodes;
     ConcurrentLinkedQueue<Transaction> transactionsToOtherNodes;
     ConcurrentLinkedQueue<Block> incomingBlock;
-    List<Peer> peers;
+    static List<Peer> peers;
 
     public SocketHandler(ConcurrentLinkedQueue<Block> blocksToOtherNodes, ConcurrentLinkedQueue<Block> incomingBlock) {
         this.blocksToOtherNodes = blocksToOtherNodes;
         this.incomingBlock = incomingBlock;
-        peers = new ArrayList<>();
+        peers = peerFileToList();
     }
 
     @Override
@@ -51,7 +53,7 @@ public class SocketHandler implements Runnable{
 
                 sockets.submit(outbound);
                 sockets.submit(inbound);
-
+                writePeersToFile();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -101,7 +103,6 @@ public class SocketHandler implements Runnable{
     public void writePeersToFile() {
         try {
             File file = new File("Peers");
-            file.createNewFile();
             FileWriter fileWriter = new FileWriter(file);
 
             for (Peer x : peers) {
@@ -111,6 +112,23 @@ public class SocketHandler implements Runnable{
         } catch (IOException e) {
             System.out.println("Error writing peers to file");
         }
+    }
+
+    public static List<Peer> readTopNPeers(int amount) {
+        List<Peer> sortedList = peers.stream()
+                .sorted(Comparator.comparingInt(Peer::getScore))
+                .collect(Collectors.toList());
+
+        List<Peer> topNPeers = new ArrayList<>();
+
+        int peersGathered = 0;
+        for (int i = sortedList.size() - 1; i >= 0; i--) {
+            topNPeers.add(sortedList.get(i));
+            peersGathered++;
+            if(peersGathered >= amount) break;
+        }
+
+        return topNPeers;
     }
 
 

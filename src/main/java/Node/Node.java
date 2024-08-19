@@ -48,6 +48,10 @@ public class Node implements Runnable{
                 }
             }
 
+            if(!transactionsToMiner.isEmpty()) {
+                // how do we make the miner stop/ restart from the newest block? ??????
+            }
+
         }
 
     }
