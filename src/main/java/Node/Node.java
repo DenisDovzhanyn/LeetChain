@@ -2,6 +2,7 @@ package Node;
 
 import Miner.Block;
 import Miner.BlockChain;
+import Miner.Miner;
 import Utilities.Util;
 import Wallet.Transaction;
 import Wallet.TransactionType;
@@ -45,11 +46,12 @@ public class Node implements Runnable{
                 if (verifyIncomingBlock(incomingBlock)) {
                     Ledger.getInstance().addBlock(incomingBlock, incomingBlock.hash);
                     BlockChain.nodeAdd(incomingBlock);
+
                 }
             }
 
             if(!transactionsToMiner.isEmpty()) {
-                // how do we make the miner stop/ restart from the newest block? ??????
+
             }
 
         }

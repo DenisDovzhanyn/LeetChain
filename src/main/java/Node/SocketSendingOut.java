@@ -45,9 +45,11 @@ public class SocketSendingOut implements Runnable{
                 }
                 if (!peerRequests.isEmpty()) {
                    int amountOfPeers = peerRequests.poll().amountOfPeers;
+                   List<Peer> requestedPeers = SocketHandler.readTopNPeers(amountOfPeers);
 
-
-
+                   for (Peer peer : requestedPeers) {
+                       outBound.writeObject(peer);
+                   }
                 }
                 // we peek here instead of polling() so we dont remove the object,
                 // because this concurrent list is shared with ALL open sockets
@@ -61,7 +63,7 @@ public class SocketSendingOut implements Runnable{
                 }
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Connection terminated");
         }
     }
 

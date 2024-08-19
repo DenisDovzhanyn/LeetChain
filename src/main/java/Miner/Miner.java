@@ -16,6 +16,7 @@ public class Miner implements Runnable {
     ConcurrentLinkedQueue<Block> blocksToNode;
     List<Transaction> transactionList;
     PublicKey minersKey;
+    BlockChain chain;
 
     public Miner (ConcurrentLinkedQueue<Transaction> toMiner, ConcurrentLinkedQueue<Block> blocksToNode, PublicKey minersKey) {
         transactionsToMiner = toMiner;
@@ -25,7 +26,7 @@ public class Miner implements Runnable {
 
     @Override
     public void run() {
-        BlockChain chain = new BlockChain();
+         chain = new BlockChain();
 
         if (chain.getBlockChain().isEmpty()) {
             Block block = new Block("0", 1, 100000); //50000000
@@ -47,7 +48,9 @@ public class Miner implements Runnable {
             block = new Block(chain.getPrevious().hash, chain.getPrevious().blockNumber + 1, chain.calculateDifficulty(), transactionList);
 
             mineBlock(block);
-            chain.add(block);
+            if (block.blockNumber == chain.getPrevious().blockNumber + 1) {
+                chain.add(block);
+            }
 
 
         }
@@ -58,7 +61,7 @@ public class Miner implements Runnable {
 
     public void mineBlock(Block block) {
         System.out.println("mining block at index: " + block.blockNumber + ", at difficulty: " + block.getDifficulty() + "... ");
-        while (!block.isHashFound(block.currentHashValue)) {
+        while (!block.isHashFound(block.currentHashValue) && chain.getPrevious().blockNumber + 1 == block.blockNumber ) {
             block.mineBlock();
            // System.out.print(block.hash + "\r");
 

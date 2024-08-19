@@ -33,6 +33,12 @@ public class SocketReceiving implements Runnable {
             while (true) {
                 Object object = inputStream.readObject();
 
+                // from testing in a different repository, when an object is received and then the connection closes
+                // this will throw an error " connnection reset", upon getting this error we should close this thread ( including the sending out thread aswell )
+                // how will we handle this exception and close this thread ??????
+                // even so if we throw an exception to close this thread, how will we close the sending out thread?
+                // Should I just let it die on its own when it tries to send out info?
+
                 if (object instanceof BlockListRequest) {
                     BlockListRequest request = (BlockListRequest) object;
                     blockRequest.add(request);
@@ -47,9 +53,12 @@ public class SocketReceiving implements Runnable {
                 if (object instanceof Transaction) {
                     incomingTransactions.add((Transaction) object);
                 }
+                if (object instanceof Peer) {
+                    SocketHandler.peers.add((Peer) object);
+                }
             }
         } catch (IOException | ClassNotFoundException e) {
-            System.out.println("error receiving/formatting data");
+            throw new RuntimeException("object not formatted correctly or connection terminated");
         }
     }
 }
