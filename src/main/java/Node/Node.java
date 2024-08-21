@@ -49,7 +49,6 @@ public class Node implements Runnable{
 
                 }
             }
-
             if(!transactionsToMiner.isEmpty()) {
 
             }

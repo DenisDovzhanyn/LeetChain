@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -57,12 +58,17 @@ public class SocketSendingOut implements Runnable{
                 // how ?
                 if (!blocksToOtherNodes.isEmpty()) {
                     outBound.writeObject(blocksToOtherNodes.peek());
+                    // sketchy but it might work? we wait for 1 second and then remove it? this gives enough times for all threads to peak at block
+                    wait(1000);
+                    blocksToOtherNodes.poll();
                 }
                 if(!transactionsToOtherNodes.isEmpty()) {
                     outBound.writeObject(transactionsToOtherNodes.peek());
+                    wait(1000);
+                    transactionsToOtherNodes.poll();
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             throw new RuntimeException("Connection terminated");
         }
     }

@@ -37,7 +37,6 @@ public class SocketHandler implements Runnable{
     public void run() {
         sockets = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
 
-
         // we need to try to connect here first with a regular socket before opening up our server for connections from other people
         while (sockets.getPoolSize() <= 9) {
             try {
