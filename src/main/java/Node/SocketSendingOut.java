@@ -39,7 +39,7 @@ public class SocketSendingOut implements Runnable{
                     BlockListRequest request = blockRequests.poll();
                     List<Block> requestedBlocklist = Ledger.getInstance().blockListStartAndEnd(request.start, request.end);
 
-                    // why for loop here going through list when I can just send the whole list?
+                    // why loop here going through list when I can just send the whole list?
                     for (Block block : requestedBlocklist) {
                         outBound.writeObject(block);
                     }

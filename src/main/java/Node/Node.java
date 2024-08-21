@@ -46,7 +46,9 @@ public class Node implements Runnable{
                 if (verifyIncomingBlock(incomingBlock)) {
                     Ledger.getInstance().addBlock(incomingBlock, incomingBlock.hash);
                     BlockChain.nodeAdd(incomingBlock);
-
+                    // we want to send this out to other people we are connected to but how do we stop it from sending it back to the
+                    // person who sent us the block originally?
+                    blocksToOtherNodes.add(incomingBlock);
                 }
             }
             if(!transactionsToMiner.isEmpty()) {
