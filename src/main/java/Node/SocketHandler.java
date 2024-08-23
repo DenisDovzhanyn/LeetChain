@@ -10,6 +10,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -36,10 +37,20 @@ public class SocketHandler implements Runnable{
     @Override
     public void run() {
         sockets = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
+        try {
+            for (Peer x : peers) {
+                Socket socket = new Socket(x.ip, x.port);
+                if(socket.isConnected()) {
+                    x.raiseScoreByOne();
+                    ConcurrentLinkedQueue<BlockListRequest> blockRequests = new ConcurrentLinkedQueue<>();
+                    ConcurrentLinkedQueue<PeerListRequest> peerRequests = new ConcurrentLinkedQueue<>();
 
-        // we need to try to connect here first with a regular socket before opening up our server for connections from other people
-        while (sockets.getPoolSize() <= 9) {
-            try {
+                    SocketSendingOut outbound = new SocketSendingOut(socket, blocksToOtherNodes, transactionsToOtherNodes, blockRequests, peerRequests);
+                    SocketReceiving inbound = new SocketReceiving(socket, transactionsToOtherNodes, incomingBlock, blockRequests, peerRequests);
+                }
+            }
+            // we need to try to connect here first with a regular socket before opening up our server for connections from other people
+            while (sockets.getPoolSize() <= 9) {
                 server = new ServerSocket(6478);
                 Socket socket = server.accept();
                 checkSocketForPreviousConnection(socket.getRemoteSocketAddress().toString());
@@ -53,9 +64,11 @@ public class SocketHandler implements Runnable{
                 sockets.submit(outbound);
                 sockets.submit(inbound);
                 writePeersToFile();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
             }
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -129,6 +142,5 @@ public class SocketHandler implements Runnable{
 
         return topNPeers;
     }
-
 
 }
