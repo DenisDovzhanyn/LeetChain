@@ -1,8 +1,8 @@
 package Node;
 
 import Miner.Block;
-import Node.RequestTypes.BlockListRequest;
-import Node.RequestTypes.PeerListRequest;
+import Node.MessageTypes.BlockListRequest;
+import Node.MessageTypes.PeerListRequest;
 import Wallet.Transaction;
 
 import java.io.File;

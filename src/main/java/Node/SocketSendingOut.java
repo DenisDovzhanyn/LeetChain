@@ -1,15 +1,13 @@
 package Node;
 
 import Miner.Block;
-import Node.RequestTypes.BlockListRequest;
-import Node.RequestTypes.PeerListRequest;
+import Node.MessageTypes.BlockListRequest;
+import Node.MessageTypes.PeerListRequest;
 import Wallet.Transaction;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
