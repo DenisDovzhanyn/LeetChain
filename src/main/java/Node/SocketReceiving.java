@@ -2,7 +2,9 @@ package Node;
 
 import Miner.Block;
 import Node.MessageTypes.BlockListRequest;
+import Node.MessageTypes.BlockMessage;
 import Node.MessageTypes.PeerListRequest;
+import Node.MessageTypes.PeerMessage;
 import Wallet.Transaction;
 
 import java.io.IOException;
@@ -13,11 +15,11 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class SocketReceiving implements Runnable {
     Socket receiving;
     ConcurrentLinkedQueue<Transaction> incomingTransactions;
-    ConcurrentLinkedQueue<Block> incomingBlocks;
+    ConcurrentLinkedQueue<BlockMessage> incomingBlocks;
     ConcurrentLinkedQueue<BlockListRequest> blockRequest;
     ConcurrentLinkedQueue<PeerListRequest> peerListRequest;
 
-    public SocketReceiving(Socket receiving,ConcurrentLinkedQueue<Transaction> incomingTransactions, ConcurrentLinkedQueue<Block> incomingBlocks,
+    public SocketReceiving(Socket receiving,ConcurrentLinkedQueue<Transaction> incomingTransactions, ConcurrentLinkedQueue<BlockMessage> incomingBlocks,
                            ConcurrentLinkedQueue<BlockListRequest> blockRequest, ConcurrentLinkedQueue<PeerListRequest> peerRequests) {
         this.receiving = receiving;
         this.incomingTransactions = incomingTransactions;
@@ -47,14 +49,16 @@ public class SocketReceiving implements Runnable {
                     PeerListRequest request = (PeerListRequest) object;
                     peerListRequest.add(request);
                 }
-                if (object instanceof Block) {
-                    incomingBlocks.add((Block) object);
+                if (object instanceof BlockMessage) {
+                    incomingBlocks.add((BlockMessage) object);
                 }
                 if (object instanceof Transaction) {
                     incomingTransactions.add((Transaction) object);
                 }
-                if (object instanceof Peer) {
-                    SocketHandler.peers.add((Peer) object);
+                if (object instanceof PeerMessage) {
+                    PeerMessage message = (PeerMessage) object;
+                    SocketHandler.peers.addAll(message.getPeers());
+
                 }
             }
         } catch (IOException | ClassNotFoundException e) {

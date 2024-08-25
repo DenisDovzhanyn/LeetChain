@@ -3,6 +3,7 @@ package Node;
 import Miner.Block;
 import Miner.BlockChain;
 import Miner.Miner;
+import Node.MessageTypes.BlockMessage;
 import Utilities.Util;
 import Wallet.Transaction;
 import Wallet.TransactionType;
@@ -13,7 +14,7 @@ public class Node implements Runnable{
     ConcurrentLinkedQueue<Transaction> transactionsToOtherNodes;
     ConcurrentLinkedQueue<Transaction> transactionsToMiner;
     ConcurrentLinkedQueue<Block> blocksToOtherNodes;
-    ConcurrentLinkedQueue<Block> incomingBlocks;
+    ConcurrentLinkedQueue<BlockMessage> incomingBlocks;
 
     SocketHandler server;
     Thread socketHandler;

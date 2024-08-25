@@ -2,6 +2,7 @@ package Node;
 
 import Miner.Block;
 import Node.MessageTypes.BlockListRequest;
+import Node.MessageTypes.BlockMessage;
 import Node.MessageTypes.PeerListRequest;
 import Wallet.Transaction;
 
@@ -25,10 +26,10 @@ public class SocketHandler implements Runnable{
     ThreadPoolExecutor sockets;
     ConcurrentLinkedQueue<Block> blocksToOtherNodes;
     ConcurrentLinkedQueue<Transaction> transactionsToOtherNodes;
-    ConcurrentLinkedQueue<Block> incomingBlock;
+    ConcurrentLinkedQueue<BlockMessage> incomingBlock;
     static List<Peer> peers;
 
-    public SocketHandler(ConcurrentLinkedQueue<Block> blocksToOtherNodes, ConcurrentLinkedQueue<Block> incomingBlock) {
+    public SocketHandler(ConcurrentLinkedQueue<Block> blocksToOtherNodes, ConcurrentLinkedQueue<BlockMessage> incomingBlock) {
         this.blocksToOtherNodes = blocksToOtherNodes;
         this.incomingBlock = incomingBlock;
         peers = peerFileToList();

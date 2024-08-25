@@ -11,4 +11,12 @@ public class PeerMessage extends BaseMessage {
         this.peers = peers;
         this.ip = ip;
     }
+
+    public List<Peer> getPeers() {
+        return peers;
+    }
+
+    public void setPeers(List<Peer> peers) {
+        this.peers = peers;
+    }
 }
