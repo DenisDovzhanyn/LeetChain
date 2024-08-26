@@ -37,7 +37,7 @@ public class SocketHandler implements Runnable{
 
     @Override
     public void run() {
-        sockets = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
+        sockets = (ThreadPoolExecutor) Executors.newFixedThreadPool(50);
         try {
             for (Peer x : peers) {
                 Socket socket = new Socket(x.ip, x.port);
@@ -51,7 +51,7 @@ public class SocketHandler implements Runnable{
                 }
             }
             // we need to try to connect here first with a regular socket before opening up our server for connections from other people
-            while (sockets.getPoolSize() <= 9) {
+            while (sockets.getPoolSize() < 50) {
                 server = new ServerSocket(6478);
                 Socket socket = server.accept();
                 checkSocketForPreviousConnection(socket.getRemoteSocketAddress().toString());
