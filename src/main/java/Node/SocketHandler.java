@@ -37,8 +37,9 @@ public class SocketHandler implements Runnable{
 
     @Override
     public void run() {
-        sockets = (ThreadPoolExecutor) Executors.newFixedThreadPool(50);
+        sockets = (ThreadPoolExecutor) Executors.newFixedThreadPool(60);
         try {
+
             for (Peer x : peers) {
                 Socket socket = new Socket(x.ip, x.port);
                 if(socket.isConnected()) {
