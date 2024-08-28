@@ -1,10 +1,6 @@
 package Node;
 
-import Miner.Block;
-import Node.MessageTypes.BlockListRequest;
-import Node.MessageTypes.BlockMessage;
-import Node.MessageTypes.PeerListRequest;
-import Node.MessageTypes.PeerMessage;
+import Node.MessageTypes.*;
 import Wallet.Transaction;
 
 import java.io.IOException;
@@ -18,14 +14,17 @@ public class SocketReceiving implements Runnable {
     ConcurrentLinkedQueue<BlockMessage> incomingBlocks;
     ConcurrentLinkedQueue<BlockListRequest> blockRequest;
     ConcurrentLinkedQueue<PeerListRequest> peerListRequest;
+    ConcurrentLinkedQueue<LatestBlockNumber> latestBlockNumberRequest;
 
     public SocketReceiving(Socket receiving,ConcurrentLinkedQueue<Transaction> incomingTransactions, ConcurrentLinkedQueue<BlockMessage> incomingBlocks,
-                           ConcurrentLinkedQueue<BlockListRequest> blockRequest, ConcurrentLinkedQueue<PeerListRequest> peerRequests) {
+                           ConcurrentLinkedQueue<BlockListRequest> blockRequest, ConcurrentLinkedQueue<PeerListRequest> peerRequests,
+                           ConcurrentLinkedQueue<LatestBlockNumber> numberRequest) {
         this.receiving = receiving;
         this.incomingTransactions = incomingTransactions;
         this.incomingBlocks = incomingBlocks;
         this.blockRequest = blockRequest;
         this.peerListRequest = peerRequests;
+        this.latestBlockNumberRequest = numberRequest;
     }
 
     @Override
@@ -48,6 +47,15 @@ public class SocketReceiving implements Runnable {
                 if (object instanceof PeerListRequest) {
                     PeerListRequest request = (PeerListRequest) object;
                     peerListRequest.add(request);
+                }
+                if (object instanceof LatestBlockNumber) {
+                    LatestBlockNumber latestNumber = (LatestBlockNumber) object;
+                    if (latestNumber.getIsRequest()) {
+                        latestBlockNumberRequest.add(latestNumber);
+                    } else {
+                        // if its not a request, then we want to ask MULTIPLE connected people for a certain range of blocks, but How do I send it back up
+                        // and split it amongst multiple sockets?
+                    }
                 }
                 if (object instanceof BlockMessage) {
                     incomingBlocks.add((BlockMessage) object);

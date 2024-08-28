@@ -1,10 +1,7 @@
 package Node;
 
 import Miner.Block;
-import Node.MessageTypes.BlockListRequest;
-import Node.MessageTypes.BlockMessage;
-import Node.MessageTypes.PeerListRequest;
-import Node.MessageTypes.PeerMessage;
+import Node.MessageTypes.*;
 import Wallet.Transaction;
 
 import java.io.IOException;
@@ -21,15 +18,18 @@ public class SocketSendingOut implements Runnable{
     ConcurrentLinkedQueue<Transaction> transactionsToOtherNodes;
     ConcurrentLinkedQueue<BlockListRequest> blockRequests;
     ConcurrentLinkedQueue<PeerListRequest> peerRequests;
+    ConcurrentLinkedQueue<LatestBlockNumber> latestNumber;
     String ip;
 
     public SocketSendingOut(Socket outBound, ConcurrentLinkedQueue<Block> blocksToOtherNodes, ConcurrentLinkedQueue<Transaction> transactionsToOtherNodes,
-                            ConcurrentLinkedQueue<BlockListRequest> blockRequests, ConcurrentLinkedQueue<PeerListRequest> peerRequests) {
+                            ConcurrentLinkedQueue<BlockListRequest> blockRequests, ConcurrentLinkedQueue<PeerListRequest> peerRequests,
+                            ConcurrentLinkedQueue<LatestBlockNumber> latestNumber) {
         this.socketOut = outBound;
         this.blocksToOtherNodes = blocksToOtherNodes;
         this.transactionsToOtherNodes = transactionsToOtherNodes;
         this.blockRequests = blockRequests;
         this.peerRequests = peerRequests;
+        this.latestNumber = latestNumber;
     }
 
     @Override
@@ -39,6 +39,12 @@ public class SocketSendingOut implements Runnable{
             ObjectOutputStream outBound = new ObjectOutputStream(socketOut.getOutputStream());
 
             while (true) {
+                if (!latestNumber.isEmpty()) {
+                    LatestBlockNumber request = latestNumber.poll();
+                    int latest = Ledger.getInstance().getLatestBlock().blockNumber;
+                    request.setLatestBlockNumber(latest);
+                    request.setIsRequest(false);
+                }
                 if (!blockRequests.isEmpty()) {
                     BlockListRequest request = blockRequests.poll();
                     List<Block> blockList= Ledger.getInstance().blockListStartAndEnd(request.start, request.end);
@@ -71,6 +77,8 @@ public class SocketSendingOut implements Runnable{
                     wait(1000);
                     transactionsToOtherNodes.poll();
                 }
+
+
             }
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException("Connection terminated");

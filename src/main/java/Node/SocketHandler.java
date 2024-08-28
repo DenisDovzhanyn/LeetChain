@@ -3,6 +3,7 @@ package Node;
 import Miner.Block;
 import Node.MessageTypes.BlockListRequest;
 import Node.MessageTypes.BlockMessage;
+import Node.MessageTypes.LatestBlockNumber;
 import Node.MessageTypes.PeerListRequest;
 import Wallet.Transaction;
 
@@ -39,16 +40,16 @@ public class SocketHandler implements Runnable{
     public void run() {
         sockets = (ThreadPoolExecutor) Executors.newFixedThreadPool(60);
         try {
-
+            int askForHighestBlockOneTime = 0;
             for (Peer x : peers) {
                 Socket socket = new Socket(x.ip, x.port);
                 if(socket.isConnected()) {
                     x.raiseScoreByOne();
                     ConcurrentLinkedQueue<BlockListRequest> blockRequests = new ConcurrentLinkedQueue<>();
                     ConcurrentLinkedQueue<PeerListRequest> peerRequests = new ConcurrentLinkedQueue<>();
-
-                    SocketSendingOut outbound = new SocketSendingOut(socket, blocksToOtherNodes, transactionsToOtherNodes, blockRequests, peerRequests);
-                    SocketReceiving inbound = new SocketReceiving(socket, transactionsToOtherNodes, incomingBlock, blockRequests, peerRequests);
+                    ConcurrentLinkedQueue<LatestBlockNumber> latestBlockNumbers = new ConcurrentLinkedQueue<>();
+                    SocketSendingOut outbound = new SocketSendingOut(socket, blocksToOtherNodes, transactionsToOtherNodes, blockRequests, peerRequests, latestBlockNumbers);
+                    SocketReceiving inbound = new SocketReceiving(socket, transactionsToOtherNodes, incomingBlock, blockRequests, peerRequests, latestBlockNumbers);
                 }
             }
             // we need to try to connect here first with a regular socket before opening up our server for connections from other people
@@ -59,9 +60,10 @@ public class SocketHandler implements Runnable{
 
                 ConcurrentLinkedQueue<BlockListRequest> blockRequests = new ConcurrentLinkedQueue<>();
                 ConcurrentLinkedQueue<PeerListRequest> peerRequests = new ConcurrentLinkedQueue<>();
+                ConcurrentLinkedQueue<LatestBlockNumber> latestBlockNumbers = new ConcurrentLinkedQueue<>();
 
-                SocketSendingOut outbound = new SocketSendingOut(socket, blocksToOtherNodes, transactionsToOtherNodes, blockRequests, peerRequests);
-                SocketReceiving inbound = new SocketReceiving(socket, transactionsToOtherNodes, incomingBlock, blockRequests, peerRequests);
+                SocketSendingOut outbound = new SocketSendingOut(socket, blocksToOtherNodes, transactionsToOtherNodes, blockRequests, peerRequests, latestBlockNumbers);
+                SocketReceiving inbound = new SocketReceiving(socket, transactionsToOtherNodes, incomingBlock, blockRequests, peerRequests, latestBlockNumbers);
 
                 sockets.submit(outbound);
                 sockets.submit(inbound);

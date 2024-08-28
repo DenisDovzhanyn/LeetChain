@@ -16,11 +16,11 @@ public class LatestBlockNumber extends BaseMessage {
         this.latestBlockNumber = latestBlockNumber;
     }
 
-    public Boolean getRequest() {
+    public Boolean getIsRequest() {
         return isRequest;
     }
 
-    public void setRequest(Boolean request) {
+    public void setIsRequest(Boolean request) {
         isRequest = request;
     }
 }
