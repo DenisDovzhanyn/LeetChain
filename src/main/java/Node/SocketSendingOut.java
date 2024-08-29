@@ -14,22 +14,27 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class SocketSendingOut implements Runnable{
     Socket socketOut;
-    ConcurrentLinkedQueue<Block> blocksToOtherNodes;
+    ConcurrentLinkedQueue<BlockMessage> blocksToOtherNodes;
     ConcurrentLinkedQueue<Transaction> transactionsToOtherNodes;
     ConcurrentLinkedQueue<BlockListRequest> blockRequests;
     ConcurrentLinkedQueue<PeerListRequest> peerRequests;
     ConcurrentLinkedQueue<LatestBlockNumber> latestNumber;
     String ip;
 
-    public SocketSendingOut(Socket outBound, ConcurrentLinkedQueue<Block> blocksToOtherNodes, ConcurrentLinkedQueue<Transaction> transactionsToOtherNodes,
-                            ConcurrentLinkedQueue<BlockListRequest> blockRequests, ConcurrentLinkedQueue<PeerListRequest> peerRequests,
+    public SocketSendingOut(Socket outBound, ConcurrentLinkedQueue<BlockListRequest> blockRequests, ConcurrentLinkedQueue<PeerListRequest> peerRequests,
                             ConcurrentLinkedQueue<LatestBlockNumber> latestNumber) {
         this.socketOut = outBound;
-        this.blocksToOtherNodes = blocksToOtherNodes;
-        this.transactionsToOtherNodes = transactionsToOtherNodes;
         this.blockRequests = blockRequests;
         this.peerRequests = peerRequests;
         this.latestNumber = latestNumber;
+    }
+
+    public void setBlocksToOtherNodes(ConcurrentLinkedQueue<BlockMessage> blocksToOtherNodes) {
+        this.blocksToOtherNodes = blocksToOtherNodes;
+    }
+
+    public void setTransactionsToOtherNodes(ConcurrentLinkedQueue<Transaction> transactionsToOtherNodes) {
+        this.transactionsToOtherNodes = transactionsToOtherNodes;
     }
 
     @Override
@@ -58,19 +63,9 @@ public class SocketSendingOut implements Runnable{
                    PeerMessage peerMessage = new PeerMessage(requestedPeers, ip);
                    outBound.writeObject(peerMessage);
                 }
-                // we peek here instead of polling() so we dont remove the object,
-                // because this concurrent list is shared with ALL open sockets
-                // is there a way to remove it after the last socket has sent it out?
-                // how ?
-                if (!blocksToOtherNodes.isEmpty()) {
-                    List<Block> blockList = new ArrayList<>();
-                    blockList.add(blocksToOtherNodes.peek());
 
-                    BlockMessage blockMessage = new BlockMessage(blockList, ip);
-                    outBound.writeObject(blockMessage);
-                    // sketchy but it might work? we wait for 1 second and then remove it? this gives enough times for all threads to peak at block
-                    wait(1000);
-                    blocksToOtherNodes.poll();
+                if (!blocksToOtherNodes.isEmpty()) {
+                    outBound.writeObject(blocksToOtherNodes.poll());
                 }
                 if(!transactionsToOtherNodes.isEmpty()) {
                     outBound.writeObject(transactionsToOtherNodes.peek());

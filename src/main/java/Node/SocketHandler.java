@@ -28,11 +28,13 @@ public class SocketHandler implements Runnable{
     ConcurrentLinkedQueue<Block> blocksToOtherNodes;
     ConcurrentLinkedQueue<Transaction> transactionsToOtherNodes;
     ConcurrentLinkedQueue<BlockMessage> incomingBlock;
+    ConcurrentLinkedQueue<SocketSendingOut> socketsToListener;
     static List<Peer> peers;
 
     public SocketHandler(ConcurrentLinkedQueue<Block> blocksToOtherNodes, ConcurrentLinkedQueue<BlockMessage> incomingBlock) {
         this.blocksToOtherNodes = blocksToOtherNodes;
         this.incomingBlock = incomingBlock;
+        this.socketsToListener = new ConcurrentLinkedQueue<>();
         peers = peerFileToList();
     }
 
@@ -40,7 +42,7 @@ public class SocketHandler implements Runnable{
     public void run() {
         sockets = (ThreadPoolExecutor) Executors.newFixedThreadPool(60);
         try {
-            int askForHighestBlockOneTime = 0;
+
             for (Peer x : peers) {
                 Socket socket = new Socket(x.ip, x.port);
                 if(socket.isConnected()) {
@@ -48,7 +50,8 @@ public class SocketHandler implements Runnable{
                     ConcurrentLinkedQueue<BlockListRequest> blockRequests = new ConcurrentLinkedQueue<>();
                     ConcurrentLinkedQueue<PeerListRequest> peerRequests = new ConcurrentLinkedQueue<>();
                     ConcurrentLinkedQueue<LatestBlockNumber> latestBlockNumbers = new ConcurrentLinkedQueue<>();
-                    SocketSendingOut outbound = new SocketSendingOut(socket, blocksToOtherNodes, transactionsToOtherNodes, blockRequests, peerRequests, latestBlockNumbers);
+                    SocketSendingOut outbound = new SocketSendingOut(socket, blockRequests, peerRequests, latestBlockNumbers);
+                    socketsToListener.add(outbound);
                     SocketReceiving inbound = new SocketReceiving(socket, transactionsToOtherNodes, incomingBlock, blockRequests, peerRequests, latestBlockNumbers);
                 }
             }
@@ -62,7 +65,8 @@ public class SocketHandler implements Runnable{
                 ConcurrentLinkedQueue<PeerListRequest> peerRequests = new ConcurrentLinkedQueue<>();
                 ConcurrentLinkedQueue<LatestBlockNumber> latestBlockNumbers = new ConcurrentLinkedQueue<>();
 
-                SocketSendingOut outbound = new SocketSendingOut(socket, blocksToOtherNodes, transactionsToOtherNodes, blockRequests, peerRequests, latestBlockNumbers);
+                SocketSendingOut outbound = new SocketSendingOut(socket, blockRequests, peerRequests, latestBlockNumbers);
+                socketsToListener.add(outbound);
                 SocketReceiving inbound = new SocketReceiving(socket, transactionsToOtherNodes, incomingBlock, blockRequests, peerRequests, latestBlockNumbers);
 
                 sockets.submit(outbound);

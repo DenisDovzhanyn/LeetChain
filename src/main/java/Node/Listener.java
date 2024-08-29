@@ -2,6 +2,7 @@ package Node;
 
 import Node.MessageTypes.BlockMessage;
 
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,6 +24,12 @@ public class Listener implements Runnable{
     @Override
     public void run() {
         while (true) {
+            if (!newlyConnectedSockets.isEmpty()) {
+                ConcurrentLinkedQueue<BlockMessage> personalQueue = new ConcurrentLinkedQueue<>();
+                SocketSendingOut socket = newlyConnectedSockets.poll();
+                socket.setBlocksToOtherNodes(personalQueue);
+                socketPersonalQueue.add(personalQueue);
+            }
             if (!blocksToBeSentOut.isEmpty()) {
                 addBlockToAllSocketQueues();
             }
