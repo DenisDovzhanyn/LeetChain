@@ -1,21 +1,24 @@
 package Node;
 
+import Miner.Block;
 import Node.MessageTypes.BlockMessage;
+import Node.MessageTypes.TransactionMessage;
 
-import java.net.Socket;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 // instead of giving all sockets access to one queue we will give them each their own
 public class Listener implements Runnable{
-    List<ConcurrentLinkedQueue<BlockMessage>> socketPersonalQueue;
+    List<ConcurrentLinkedQueue<BlockMessage>> socketPersonalBlockQueues;
+    List<ConcurrentLinkedQueue<TransactionMessage>> socketPersonalTransactionQueues;
     ConcurrentLinkedQueue<SocketSendingOut> newlyConnectedSockets;
-    ConcurrentLinkedQueue<BlockMessage> blocksToBeSentOut;
+    ConcurrentLinkedQueue<Block> blocksToBeSentOut;
+    ConcurrentLinkedQueue<TransactionMessage> transactionsToBeSentOut;
 
-    public Listener(ConcurrentLinkedQueue<SocketSendingOut> newlyConnectedSockets, ConcurrentLinkedQueue<BlockMessage> blocksToBeSentOut) {
-        this.socketPersonalQueue = new ArrayList<>();
+    public Listener(ConcurrentLinkedQueue<SocketSendingOut> newlyConnectedSockets, ConcurrentLinkedQueue<Block> blocksToBeSentOut) {
+        this.socketPersonalBlockQueues = new ArrayList<>();
+        this.socketPersonalTransactionQueues = new ArrayList<>();
         this.newlyConnectedSockets = newlyConnectedSockets;
         this.blocksToBeSentOut = blocksToBeSentOut;
     }
@@ -25,22 +28,44 @@ public class Listener implements Runnable{
     public void run() {
         while (true) {
             if (!newlyConnectedSockets.isEmpty()) {
-                ConcurrentLinkedQueue<BlockMessage> personalQueue = new ConcurrentLinkedQueue<>();
-                SocketSendingOut socket = newlyConnectedSockets.poll();
-                socket.setBlocksToOtherNodes(personalQueue);
-                socketPersonalQueue.add(personalQueue);
+                assignPersonalQueues();
             }
             if (!blocksToBeSentOut.isEmpty()) {
                 addBlockToAllSocketQueues();
+            }
+            if (!transactionsToBeSentOut.isEmpty()) {
+                addTransactionToAllSocketQueues();
             }
         }
     }
 
     public void addBlockToAllSocketQueues() {
-        BlockMessage blockMessage = blocksToBeSentOut.poll();
-
-        for (ConcurrentLinkedQueue<BlockMessage> x : socketPersonalQueue) {
-            x.add(blockMessage);
+        List<Block> blockList = new ArrayList<>();
+        blockList.add(blocksToBeSentOut.poll());
+        BlockMessage message = new BlockMessage(blockList,"not yet entered");
+        for (ConcurrentLinkedQueue<BlockMessage> x : socketPersonalBlockQueues) {
+            x.add(message);
         }
+    }
+
+    public void addTransactionToAllSocketQueues() {
+        TransactionMessage transactionMessage = transactionsToBeSentOut.poll();
+
+        for (ConcurrentLinkedQueue<TransactionMessage> x : socketPersonalTransactionQueues) {
+            x.add(transactionMessage);
+        }
+    }
+
+    public void assignPersonalQueues() {
+        ConcurrentLinkedQueue<BlockMessage> personalBlockQueue = new ConcurrentLinkedQueue<>();
+        ConcurrentLinkedQueue<TransactionMessage> personalTransactionQueue = new ConcurrentLinkedQueue<>();
+
+        SocketSendingOut socket = newlyConnectedSockets.poll();
+
+        socket.setBlocksToOtherNodes(personalBlockQueue);
+        socket.setTransactionsToOtherNodes(personalTransactionQueue);
+
+        socketPersonalBlockQueues.add(personalBlockQueue);
+        socketPersonalTransactionQueues.add(personalTransactionQueue);
     }
 }

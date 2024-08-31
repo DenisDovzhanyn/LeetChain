@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class SocketSendingOut implements Runnable{
     Socket socketOut;
     ConcurrentLinkedQueue<BlockMessage> blocksToOtherNodes;
-    ConcurrentLinkedQueue<Transaction> transactionsToOtherNodes;
+    ConcurrentLinkedQueue<TransactionMessage> transactionsToOtherNodes;
     ConcurrentLinkedQueue<BlockListRequest> blockRequests;
     ConcurrentLinkedQueue<PeerListRequest> peerRequests;
     ConcurrentLinkedQueue<LatestBlockNumber> latestNumber;
@@ -33,7 +33,7 @@ public class SocketSendingOut implements Runnable{
         this.blocksToOtherNodes = blocksToOtherNodes;
     }
 
-    public void setTransactionsToOtherNodes(ConcurrentLinkedQueue<Transaction> transactionsToOtherNodes) {
+    public void setTransactionsToOtherNodes(ConcurrentLinkedQueue<TransactionMessage> transactionsToOtherNodes) {
         this.transactionsToOtherNodes = transactionsToOtherNodes;
     }
 
@@ -49,6 +49,7 @@ public class SocketSendingOut implements Runnable{
                     int latest = Ledger.getInstance().getLatestBlock().blockNumber;
                     request.setLatestBlockNumber(latest);
                     request.setIsRequest(false);
+                    outBound.writeObject(request);
                 }
                 if (!blockRequests.isEmpty()) {
                     BlockListRequest request = blockRequests.poll();
@@ -65,7 +66,9 @@ public class SocketSendingOut implements Runnable{
                 }
 
                 if (!blocksToOtherNodes.isEmpty()) {
-                    outBound.writeObject(blocksToOtherNodes.poll());
+                    BlockMessage blockMessage = blocksToOtherNodes.poll();
+                    blockMessage.setIp(ip);
+                    outBound.writeObject(blockMessage);
                 }
                 if(!transactionsToOtherNodes.isEmpty()) {
                     outBound.writeObject(transactionsToOtherNodes.peek());

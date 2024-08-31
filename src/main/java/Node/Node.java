@@ -15,17 +15,20 @@ public class Node implements Runnable{
     ConcurrentLinkedQueue<Transaction> transactionsToMiner;
     ConcurrentLinkedQueue<Block> blocksToOtherNodes;
     ConcurrentLinkedQueue<BlockMessage> incomingBlocks;
-
     SocketHandler server;
+    Listener listener;
+    Thread handleOutBound;
     Thread socketHandler;
 
 
     public Node (ConcurrentLinkedQueue<Transaction> transactionsToNodes, ConcurrentLinkedQueue<Block> blocksToOtherNodes) {
-        transactionsToOtherNodes = transactionsToNodes;
+        this.transactionsToOtherNodes = transactionsToNodes;
         this.blocksToOtherNodes = blocksToOtherNodes;
         Ledger.getInstance();
-        server = new SocketHandler(blocksToOtherNodes, incomingBlocks);
-        socketHandler = new Thread(server);
+        ConcurrentLinkedQueue<SocketSendingOut> newConnectionsToListener = new ConcurrentLinkedQueue<SocketSendingOut>();
+        this.server = new SocketHandler(incomingBlocks, newConnectionsToListener);
+        this.listener = new Listener(newConnectionsToListener, blocksToOtherNodes);
+        this.socketHandler = new Thread(server);
         socketHandler.start();
 
         while (server.amountOfConnectedSockets() <= 1) {

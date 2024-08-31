@@ -1,10 +1,7 @@
 package Node;
 
 import Miner.Block;
-import Node.MessageTypes.BlockListRequest;
-import Node.MessageTypes.BlockMessage;
-import Node.MessageTypes.LatestBlockNumber;
-import Node.MessageTypes.PeerListRequest;
+import Node.MessageTypes.*;
 import Wallet.Transaction;
 
 import java.io.File;
@@ -12,7 +9,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -25,16 +21,15 @@ import java.util.stream.Collectors;
 public class SocketHandler implements Runnable{
     ServerSocket server;
     ThreadPoolExecutor sockets;
-    ConcurrentLinkedQueue<Block> blocksToOtherNodes;
-    ConcurrentLinkedQueue<Transaction> transactionsToOtherNodes;
+    ConcurrentLinkedQueue<TransactionMessage> transactionsToOtherNodes;
     ConcurrentLinkedQueue<BlockMessage> incomingBlock;
     ConcurrentLinkedQueue<SocketSendingOut> socketsToListener;
     static List<Peer> peers;
 
-    public SocketHandler(ConcurrentLinkedQueue<Block> blocksToOtherNodes, ConcurrentLinkedQueue<BlockMessage> incomingBlock) {
-        this.blocksToOtherNodes = blocksToOtherNodes;
+    public SocketHandler( ConcurrentLinkedQueue<BlockMessage> incomingBlock, ConcurrentLinkedQueue<SocketSendingOut> socketsToListener) {
         this.incomingBlock = incomingBlock;
-        this.socketsToListener = new ConcurrentLinkedQueue<>();
+        this.socketsToListener = socketsToListener;
+
         peers = peerFileToList();
     }
 
@@ -51,11 +46,13 @@ public class SocketHandler implements Runnable{
                     ConcurrentLinkedQueue<PeerListRequest> peerRequests = new ConcurrentLinkedQueue<>();
                     ConcurrentLinkedQueue<LatestBlockNumber> latestBlockNumbers = new ConcurrentLinkedQueue<>();
                     SocketSendingOut outbound = new SocketSendingOut(socket, blockRequests, peerRequests, latestBlockNumbers);
-                    socketsToListener.add(outbound);
                     SocketReceiving inbound = new SocketReceiving(socket, transactionsToOtherNodes, incomingBlock, blockRequests, peerRequests, latestBlockNumbers);
+
+                    socketsToListener.add(outbound);
+                    sockets.submit(outbound);
+                    sockets.submit(inbound);
                 }
             }
-            // we need to try to connect here first with a regular socket before opening up our server for connections from other people
             while (sockets.getPoolSize() < 50) {
                 server = new ServerSocket(6478);
                 Socket socket = server.accept();
@@ -67,14 +64,13 @@ public class SocketHandler implements Runnable{
 
                 SocketSendingOut outbound = new SocketSendingOut(socket, blockRequests, peerRequests, latestBlockNumbers);
                 socketsToListener.add(outbound);
+                // nothing is being done with transactionstoothernodes wth?
                 SocketReceiving inbound = new SocketReceiving(socket, transactionsToOtherNodes, incomingBlock, blockRequests, peerRequests, latestBlockNumbers);
 
                 sockets.submit(outbound);
                 sockets.submit(inbound);
                 writePeersToFile();
             }
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -86,12 +82,12 @@ public class SocketHandler implements Runnable{
 
     //
     public List<Peer> peerFileToList() {
-        File peerlist = new File("Peers");
+        File peerList = new File("Peers");
         List<Peer> peers = new ArrayList<>();
 
         try {
-            peerlist.createNewFile();
-            Scanner scanner = new Scanner(peerlist);
+            peerList.createNewFile();
+            Scanner scanner = new Scanner(peerList);
 
             while (scanner.hasNext()) {
                 String[] splitLine = scanner.nextLine().split(":");

@@ -10,13 +10,13 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class SocketReceiving implements Runnable {
     Socket receiving;
-    ConcurrentLinkedQueue<Transaction> incomingTransactions;
+    ConcurrentLinkedQueue<TransactionMessage> incomingTransactions;
     ConcurrentLinkedQueue<BlockMessage> incomingBlocks;
     ConcurrentLinkedQueue<BlockListRequest> blockRequest;
     ConcurrentLinkedQueue<PeerListRequest> peerListRequest;
     ConcurrentLinkedQueue<LatestBlockNumber> latestBlockNumberRequest;
 
-    public SocketReceiving(Socket receiving,ConcurrentLinkedQueue<Transaction> incomingTransactions, ConcurrentLinkedQueue<BlockMessage> incomingBlocks,
+    public SocketReceiving(Socket receiving,ConcurrentLinkedQueue<TransactionMessage> incomingTransactions, ConcurrentLinkedQueue<BlockMessage> incomingBlocks,
                            ConcurrentLinkedQueue<BlockListRequest> blockRequest, ConcurrentLinkedQueue<PeerListRequest> peerRequests,
                            ConcurrentLinkedQueue<LatestBlockNumber> numberRequest) {
         this.receiving = receiving;
@@ -60,8 +60,8 @@ public class SocketReceiving implements Runnable {
                 if (object instanceof BlockMessage) {
                     incomingBlocks.add((BlockMessage) object);
                 }
-                if (object instanceof Transaction) {
-                    incomingTransactions.add((Transaction) object);
+                if (object instanceof TransactionMessage) {
+                    incomingTransactions.add((TransactionMessage) object);
                 }
                 if (object instanceof PeerMessage) {
                     PeerMessage message = (PeerMessage) object;
