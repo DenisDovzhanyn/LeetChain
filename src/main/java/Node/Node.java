@@ -4,15 +4,18 @@ import Miner.Block;
 import Miner.BlockChain;
 import Miner.Miner;
 import Node.MessageTypes.BlockMessage;
+import Node.MessageTypes.TransactionMessage;
 import Utilities.Util;
 import Wallet.Transaction;
 import Wallet.TransactionType;
 
+import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Node implements Runnable{
-    ConcurrentLinkedQueue<Transaction> transactionsToOtherNodes;
+    ConcurrentLinkedQueue<TransactionMessage> transactionsToOtherNodes;
     ConcurrentLinkedQueue<Transaction> transactionsToMiner;
+    ConcurrentLinkedQueue<Transaction> incomingTransaction;
     ConcurrentLinkedQueue<Block> blocksToOtherNodes;
     ConcurrentLinkedQueue<BlockMessage> incomingBlocks;
     SocketHandler server;
@@ -21,15 +24,21 @@ public class Node implements Runnable{
     Thread socketHandler;
 
 
-    public Node (ConcurrentLinkedQueue<Transaction> transactionsToNodes, ConcurrentLinkedQueue<Block> blocksToOtherNodes) {
-        this.transactionsToOtherNodes = transactionsToNodes;
+    public Node (ConcurrentLinkedQueue<Transaction> transactionsMiner, ConcurrentLinkedQueue<Block> blocksToOtherNodes, ConcurrentLinkedQueue<Transaction> incomingTransaction) {
+        transactionsToOtherNodes = new ConcurrentLinkedQueue<>();
+        this.transactionsToMiner = transactionsMiner;
+        this.incomingTransaction = incomingTransaction;
         this.blocksToOtherNodes = blocksToOtherNodes;
         Ledger.getInstance();
         ConcurrentLinkedQueue<SocketSendingOut> newConnectionsToListener = new ConcurrentLinkedQueue<SocketSendingOut>();
-        this.server = new SocketHandler(incomingBlocks, newConnectionsToListener);
-        this.listener = new Listener(newConnectionsToListener, blocksToOtherNodes);
+
+        this.server = new SocketHandler(incomingBlocks, newConnectionsToListener, transactionsToOtherNodes);
+        this.listener = new Listener(newConnectionsToListener, blocksToOtherNodes, transactionsToOtherNodes);
         this.socketHandler = new Thread(server);
+        this.handleOutBound = new Thread(listener);
+        handleOutBound.start();
         socketHandler.start();
+
 
         while (server.amountOfConnectedSockets() <= 1) {
             // wait here until we are connected to at least one person
@@ -45,18 +54,22 @@ public class Node implements Runnable{
             if(!incomingBlocks.isEmpty()) {
                 // notify miner before or after a new block is verified? how long will verification take ? will people try to take advantage of this
                 // and send faulty blocks to set miners back and interrupt their mining?
-                Block incomingBlock = blocksToOtherNodes.poll();
+                List<Block> blocks = incomingBlocks.poll().getBlocks();
 
-                if (verifyIncomingBlock(incomingBlock)) {
-                    Ledger.getInstance().addBlock(incomingBlock, incomingBlock.hash);
-                    BlockChain.nodeAdd(incomingBlock);
-                    // we want to send this out to other people we are connected to but how do we stop it from sending it back to the
-                    // person who sent us the block originally?
-                    blocksToOtherNodes.add(incomingBlock);
+                for (Block x : blocks) {
+                    if (verifyIncomingBlock(x)) {
+                        Ledger.getInstance().addBlock(x, x.hash);
+                        BlockChain.nodeAdd(x);
+                        // we want to send this out to other people we are connected to but how do we stop it from sending it back to the
+                        // person who sent us the block originally?
+                        blocksToOtherNodes.add(x);
+                    }
                 }
             }
-            if(!transactionsToMiner.isEmpty()) {
-
+            if(!incomingTransaction.isEmpty()) {
+                TransactionMessage transaction = new TransactionMessage(transactionsToMiner.poll(), "ip not inputted yet");
+                transactionsToOtherNodes.add(transaction);
+                transactionsToMiner.add(transaction.getTransaction());
             }
 
         }

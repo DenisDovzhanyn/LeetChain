@@ -11,4 +11,8 @@ public class BlockMessage extends BaseMessage {
         this.blocks = blocks;
         this.ip = ip;
     }
+
+    public List<Block> getBlocks() {
+        return blocks;
+    }
 }

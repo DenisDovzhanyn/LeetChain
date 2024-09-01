@@ -26,9 +26,10 @@ public class SocketHandler implements Runnable{
     ConcurrentLinkedQueue<SocketSendingOut> socketsToListener;
     static List<Peer> peers;
 
-    public SocketHandler( ConcurrentLinkedQueue<BlockMessage> incomingBlock, ConcurrentLinkedQueue<SocketSendingOut> socketsToListener) {
+    public SocketHandler(ConcurrentLinkedQueue<BlockMessage> incomingBlock, ConcurrentLinkedQueue<SocketSendingOut> socketsToListener, ConcurrentLinkedQueue<TransactionMessage> transactionsToOtherNodes) {
         this.incomingBlock = incomingBlock;
         this.socketsToListener = socketsToListener;
+        this.transactionsToOtherNodes = transactionsToOtherNodes;
 
         peers = peerFileToList();
     }
@@ -53,7 +54,7 @@ public class SocketHandler implements Runnable{
                     sockets.submit(inbound);
                 }
             }
-            while (sockets.getPoolSize() < 50) {
+            while (sockets.getPoolSize() < 60) {
                 server = new ServerSocket(6478);
                 Socket socket = server.accept();
                 checkSocketForPreviousConnection(socket.getRemoteSocketAddress().toString());

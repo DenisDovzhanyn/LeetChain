@@ -16,11 +16,12 @@ public class Listener implements Runnable{
     ConcurrentLinkedQueue<Block> blocksToBeSentOut;
     ConcurrentLinkedQueue<TransactionMessage> transactionsToBeSentOut;
 
-    public Listener(ConcurrentLinkedQueue<SocketSendingOut> newlyConnectedSockets, ConcurrentLinkedQueue<Block> blocksToBeSentOut) {
+    public Listener(ConcurrentLinkedQueue<SocketSendingOut> newlyConnectedSockets, ConcurrentLinkedQueue<Block> blocksToBeSentOut, ConcurrentLinkedQueue<TransactionMessage> transactionsToBeSentOut) {
         this.socketPersonalBlockQueues = new ArrayList<>();
         this.socketPersonalTransactionQueues = new ArrayList<>();
         this.newlyConnectedSockets = newlyConnectedSockets;
         this.blocksToBeSentOut = blocksToBeSentOut;
+        this.transactionsToBeSentOut = transactionsToBeSentOut;
     }
 
 
