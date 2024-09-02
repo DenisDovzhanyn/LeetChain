@@ -15,6 +15,10 @@ public class Peer{
         score++;
     }
 
+    public void lowerScoreByOne() {
+        score--;
+    }
+
     public String getIp() {
         return ip;
     }

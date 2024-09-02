@@ -65,7 +65,7 @@ public class SocketHandler implements Runnable{
 
                 SocketSendingOut outbound = new SocketSendingOut(socket, blockRequests, peerRequests, latestBlockNumbers);
                 socketsToListener.add(outbound);
-                // nothing is being done with transactionstoothernodes wth?
+
                 SocketReceiving inbound = new SocketReceiving(socket, transactionsToOtherNodes, incomingBlock, blockRequests, peerRequests, latestBlockNumbers);
 
                 sockets.submit(outbound);
@@ -129,6 +129,17 @@ public class SocketHandler implements Runnable{
         } catch (IOException e) {
             System.out.println("Error writing peers to file");
         }
+    }
+
+    public static int findPeerIndexByIp(String ip) {
+        int index = 0;
+        for (int i = 0; i < peers.size(); i++) {
+            if (peers.get(i).ip.equals(ip)) {
+                index = i;
+                break;
+            }
+        }
+        return index;
     }
 
     public static List<Peer> readTopNPeers(int amount) {

@@ -54,15 +54,19 @@ public class Node implements Runnable{
             if(!incomingBlocks.isEmpty()) {
                 // notify miner before or after a new block is verified? how long will verification take ? will people try to take advantage of this
                 // and send faulty blocks to set miners back and interrupt their mining?
-                List<Block> blocks = incomingBlocks.poll().getBlocks();
+               BlockMessage message= incomingBlocks.poll();
+               int peersIndexInList = SocketHandler.findPeerIndexByIp(message.getIp());
 
-                for (Block x : blocks) {
+                for (Block x : message.getBlocks()) {
                     if (verifyIncomingBlock(x)) {
                         Ledger.getInstance().addBlock(x, x.hash);
                         BlockChain.nodeAdd(x);
                         // we want to send this out to other people we are connected to but how do we stop it from sending it back to the
                         // person who sent us the block originally?
                         blocksToOtherNodes.add(x);
+                        SocketHandler.peers.get(peersIndexInList).raiseScoreByOne();
+                    } else {
+                        SocketHandler.peers.get(peersIndexInList).lowerScoreByOne();
                     }
                 }
             }
