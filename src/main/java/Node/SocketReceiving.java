@@ -1,10 +1,13 @@
 package Node;
 
+import Miner.BlockChain;
 import Node.MessageTypes.*;
 import Wallet.Transaction;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -15,6 +18,7 @@ public class SocketReceiving implements Runnable {
     ConcurrentLinkedQueue<BlockListRequest> blockRequest;
     ConcurrentLinkedQueue<PeerListRequest> peerListRequest;
     ConcurrentLinkedQueue<LatestBlockNumber> latestBlockNumberRequest;
+    String ip;
 
     public SocketReceiving(Socket receiving,ConcurrentLinkedQueue<TransactionMessage> incomingTransactions, ConcurrentLinkedQueue<BlockMessage> incomingBlocks,
                            ConcurrentLinkedQueue<BlockListRequest> blockRequest, ConcurrentLinkedQueue<PeerListRequest> peerRequests,
@@ -30,6 +34,8 @@ public class SocketReceiving implements Runnable {
     @Override
     public void run() {
         try {
+            ip = InetAddress.getLocalHost().getHostAddress();
+
             ObjectInputStream inputStream = new ObjectInputStream(receiving.getInputStream());
             while (true) {
                 Object object = inputStream.readObject();
@@ -53,6 +59,8 @@ public class SocketReceiving implements Runnable {
                     if (latestNumber.getIsRequest()) {
                         latestBlockNumberRequest.add(latestNumber);
                     } else {
+                        int start = Ledger.getInstance().getLatestBlock().blockNumber + 1;
+                        BlockListRequest request = new BlockListRequest(start, latestNumber.getLatestBlockNumber(), false, ip);
                         // if its not a request, then we want to ask MULTIPLE connected people for a certain range of blocks, but How do I send it back up
                         // and split it amongst multiple sockets?
                     }

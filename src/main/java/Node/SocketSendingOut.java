@@ -53,9 +53,14 @@ public class SocketSendingOut implements Runnable{
                 }
                 if (!blockRequests.isEmpty()) {
                     BlockListRequest request = blockRequests.poll();
-                    List<Block> blockList= Ledger.getInstance().blockListStartAndEnd(request.start, request.end);
-                    BlockMessage message = new BlockMessage(blockList, ip);
-                    outBound.writeObject(message);
+                    if (request.isRequest()) {
+                        List<Block> blockList = Ledger.getInstance().blockListStartAndEnd(request.start, request.end);
+                        BlockMessage message = new BlockMessage(blockList, ip);
+                        outBound.writeObject(message);
+                    } else {
+                        request.setRequest(true);
+                        outBound.writeObject(request);
+                    }
                 }
                 if (!peerRequests.isEmpty()) {
                    int amountOfPeers = peerRequests.poll().amountOfPeers;
