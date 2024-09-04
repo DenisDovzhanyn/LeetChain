@@ -43,6 +43,10 @@ public class SocketSendingOut implements Runnable{
             ip = InetAddress.getLocalHost().getHostAddress();
             ObjectOutputStream outBound = new ObjectOutputStream(socketOut.getOutputStream());
 
+            // on start up will create a single request and send it out, we will need to somehow pool together all the
+            // highest block numbers we get back then get either the most common number OR highest number
+            LatestBlockNumber startUpRequest = new LatestBlockNumber(false);
+            outBound.writeObject(startUpRequest);
             while (true) {
                 if (!latestNumber.isEmpty()) {
                     LatestBlockNumber request = latestNumber.poll();

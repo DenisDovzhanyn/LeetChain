@@ -37,6 +37,7 @@ public class SocketReceiving implements Runnable {
             ip = InetAddress.getLocalHost().getHostAddress();
 
             ObjectInputStream inputStream = new ObjectInputStream(receiving.getInputStream());
+
             while (true) {
                 Object object = inputStream.readObject();
 

@@ -8,6 +8,10 @@ public class LatestBlockNumber extends BaseMessage {
         isRequest = true;
     }
 
+    public LatestBlockNumber(boolean bool) {
+        this.isRequest = bool;
+    }
+
     public int getLatestBlockNumber() {
         return latestBlockNumber;
     }
