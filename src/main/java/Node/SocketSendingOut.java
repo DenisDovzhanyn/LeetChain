@@ -45,7 +45,7 @@ public class SocketSendingOut implements Runnable{
 
             // on start up will create a single request and send it out, we will need to somehow pool together all the
             // highest block numbers we get back then get either the most common number OR highest number
-            LatestBlockNumber startUpRequest = new LatestBlockNumber(false);
+            LatestBlockNumber startUpRequest = new LatestBlockNumber(true);
             outBound.writeObject(startUpRequest);
             while (true) {
                 if (!latestNumber.isEmpty()) {
@@ -80,14 +80,15 @@ public class SocketSendingOut implements Runnable{
                     outBound.writeObject(blockMessage);
                 }
                 if(!transactionsToOtherNodes.isEmpty()) {
-                    outBound.writeObject(transactionsToOtherNodes.peek());
-                    wait(1000);
-                    transactionsToOtherNodes.poll();
+                    TransactionMessage message = transactionsToOtherNodes.poll();
+                    message.setIp(ip);
+                    outBound.writeObject(message);
+
                 }
 
 
             }
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             throw new RuntimeException("Connection terminated");
         }
     }
