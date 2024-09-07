@@ -2,14 +2,14 @@ package Node;
 
 import Miner.Block;
 import Miner.BlockChain;
-import Miner.Miner;
 import Node.MessageTypes.BlockMessage;
 import Node.MessageTypes.TransactionMessage;
 import Utilities.Util;
 import Wallet.Transaction;
 import Wallet.TransactionType;
 
-import java.util.List;
+import java.net.Socket;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Node implements Runnable{
@@ -17,7 +17,8 @@ public class Node implements Runnable{
     ConcurrentLinkedQueue<Transaction> transactionsToMiner;
     ConcurrentLinkedQueue<Transaction> incomingTransaction;
     ConcurrentLinkedQueue<Block> blocksToOtherNodes;
-    ConcurrentLinkedQueue<BlockMessage> incomingBlocks;
+    ConcurrentLinkedQueue<Object> outBoundMessage;
+    ConcurrentLinkedQueue<Object> incomingMessage;
     SocketHandler server;
     Listener listener;
     Thread handleOutBound;
@@ -30,17 +31,20 @@ public class Node implements Runnable{
         this.incomingTransaction = incomingTransaction;
         this.blocksToOtherNodes = blocksToOtherNodes;
         Ledger.getInstance();
-        ConcurrentLinkedQueue<SocketSendingOut> newConnectionsToListener = new ConcurrentLinkedQueue<SocketSendingOut>();
 
-        this.server = new SocketHandler(incomingBlocks, newConnectionsToListener, transactionsToOtherNodes);
-        this.listener = new Listener(newConnectionsToListener, blocksToOtherNodes, transactionsToOtherNodes);
+        ConcurrentLinkedQueue<Socket> newConnectionsToListener = new ConcurrentLinkedQueue<Socket>();
+        this.outBoundMessage = new ConcurrentLinkedQueue<>();
+        incomingMessage = new ConcurrentLinkedQueue<>();
+
+        this.server = new SocketHandler(newConnectionsToListener);
+        this.listener = new Listener(newConnectionsToListener, outBoundMessage, incomingMessage);
         this.socketHandler = new Thread(server);
         this.handleOutBound = new Thread(listener);
         handleOutBound.start();
         socketHandler.start();
 
 
-        while (server.amountOfConnectedSockets() <= 1) {
+        while (Listener.amountOfConnectedSockets() <= 1) {
             // wait here until we are connected to at least one person
         }
 
@@ -51,29 +55,37 @@ public class Node implements Runnable{
     @Override
     public void run() {
         while (true) {
-            if(!incomingBlocks.isEmpty()) {
+            if(!blocksToOtherNodes.isEmpty()) {
+                outBoundMessage.add(blocksToOtherNodes.poll());
+            }
+            if(!incomingMessage.isEmpty()) {
+                Object object = incomingMessage.poll();
                 // notify miner before or after a new block is verified? how long will verification take ? will people try to take advantage of this
                 // and send faulty blocks to set miners back and interrupt their mining?
-               BlockMessage message= incomingBlocks.poll();
-               int peersIndexInList = SocketHandler.findPeerIndexByIp(message.getIp());
+                if (object instanceof BlockMessage) {
+                    BlockMessage message = (BlockMessage) object;
+                    int peersIndexInList = SocketHandler.findPeerIndexByIp(message.getIp());
 
-                for (Block x : message.getBlocks()) {
-                    if (verifyIncomingBlock(x)) {
-                        Ledger.getInstance().addBlock(x, x.hash);
-                        BlockChain.nodeAdd(x);
-                        // we want to send this out to other people we are connected to but how do we stop it from sending it back to the
-                        // person who sent us the block originally?
-                        blocksToOtherNodes.add(x);
-                        SocketHandler.peers.get(peersIndexInList).raiseScoreByOne();
-                    } else {
-                        SocketHandler.peers.get(peersIndexInList).lowerScoreByOne();
+                    for (Block x : message.getBlocks()) {
+                        if (verifyIncomingBlock(x)) {
+                            Ledger.getInstance().addBlock(x, x.hash);
+                            BlockChain.nodeAdd(x);
+                            // we want to send this out to other people we are connected to but how do we stop it from sending it back to the
+                            // person who sent us the block originally?
+                            outBoundMessage.add(x);
+                            SocketHandler.peers.get(peersIndexInList).raiseScoreByOne();
+                        } else {
+                            SocketHandler.peers.get(peersIndexInList).lowerScoreByOne();
+                        }
                     }
                 }
             }
             if(!incomingTransaction.isEmpty()) {
                 TransactionMessage transaction = new TransactionMessage(transactionsToMiner.poll(), "ip not inputted yet");
-                transactionsToOtherNodes.add(transaction);
-                transactionsToMiner.add(transaction.getTransaction());
+                if (verifyIncomingTransaction(transaction.getTransaction())) {
+                    transactionsToOtherNodes.add(transaction);
+                    transactionsToMiner.add(transaction.getTransaction());
+                }
             }
 
         }

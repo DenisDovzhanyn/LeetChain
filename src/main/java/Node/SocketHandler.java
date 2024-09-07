@@ -20,66 +20,40 @@ import java.util.stream.Collectors;
 
 public class SocketHandler implements Runnable{
     ServerSocket server;
-    ThreadPoolExecutor sockets;
-    ConcurrentLinkedQueue<TransactionMessage> transactionsToOtherNodes;
-    ConcurrentLinkedQueue<BlockMessage> incomingBlock;
-    ConcurrentLinkedQueue<SocketSendingOut> socketsToListener;
+    ConcurrentLinkedQueue<Socket> socketsToListener;
     static List<Peer> peers;
 
-    public SocketHandler(ConcurrentLinkedQueue<BlockMessage> incomingBlock, ConcurrentLinkedQueue<SocketSendingOut> socketsToListener, ConcurrentLinkedQueue<TransactionMessage> transactionsToOtherNodes) {
-        this.incomingBlock = incomingBlock;
+    public SocketHandler(ConcurrentLinkedQueue<Socket> socketsToListener) {
         this.socketsToListener = socketsToListener;
-        this.transactionsToOtherNodes = transactionsToOtherNodes;
-
         peers = peerFileToList();
     }
 
     @Override
     public void run() {
-        sockets = (ThreadPoolExecutor) Executors.newFixedThreadPool(60);
         try {
-
             for (Peer x : peers) {
                 Socket socket = new Socket(x.ip, x.port);
                 if(socket.isConnected()) {
                     x.raiseScoreByOne();
-                    ConcurrentLinkedQueue<BlockListRequest> blockRequests = new ConcurrentLinkedQueue<>();
-                    ConcurrentLinkedQueue<PeerListRequest> peerRequests = new ConcurrentLinkedQueue<>();
-                    ConcurrentLinkedQueue<LatestBlockNumber> latestBlockNumbers = new ConcurrentLinkedQueue<>();
-                    SocketSendingOut outbound = new SocketSendingOut(socket, blockRequests, peerRequests, latestBlockNumbers);
-                    SocketReceiving inbound = new SocketReceiving(socket, transactionsToOtherNodes, incomingBlock, blockRequests, peerRequests, latestBlockNumbers);
-
-                    socketsToListener.add(outbound);
-                    sockets.submit(outbound);
-                    sockets.submit(inbound);
+                    socketsToListener.add(socket);
                 }
             }
-            while (sockets.getPoolSize() < 60) {
+
+            while (Listener.sockets.getPoolSize() < 60) {
+                // i dont think i should be making a new server socket every iteration whoops
                 server = new ServerSocket(6478);
                 Socket socket = server.accept();
                 checkSocketForPreviousConnection(socket.getRemoteSocketAddress().toString());
 
-                ConcurrentLinkedQueue<BlockListRequest> blockRequests = new ConcurrentLinkedQueue<>();
-                ConcurrentLinkedQueue<PeerListRequest> peerRequests = new ConcurrentLinkedQueue<>();
-                ConcurrentLinkedQueue<LatestBlockNumber> latestBlockNumbers = new ConcurrentLinkedQueue<>();
-
-                SocketSendingOut outbound = new SocketSendingOut(socket, blockRequests, peerRequests, latestBlockNumbers);
-                socketsToListener.add(outbound);
-
-                SocketReceiving inbound = new SocketReceiving(socket, transactionsToOtherNodes, incomingBlock, blockRequests, peerRequests, latestBlockNumbers);
-
-                sockets.submit(outbound);
-                sockets.submit(inbound);
+                socketsToListener.add(socket);
                 writePeersToFile();
             }
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public int amountOfConnectedSockets() {
-        return sockets.getPoolSize() / 2;
-    }
 
     //
     public List<Peer> peerFileToList() {

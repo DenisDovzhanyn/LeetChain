@@ -1,34 +1,23 @@
 package Node;
 
-import Miner.BlockChain;
 import Node.MessageTypes.*;
-import Wallet.Transaction;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class SocketReceiving implements Runnable {
     Socket receiving;
-    ConcurrentLinkedQueue<TransactionMessage> incomingTransactions;
-    ConcurrentLinkedQueue<BlockMessage> incomingBlocks;
-    ConcurrentLinkedQueue<BlockListRequest> blockRequest;
-    ConcurrentLinkedQueue<PeerListRequest> peerListRequest;
-    ConcurrentLinkedQueue<LatestBlockNumber> latestBlockNumberRequest;
+    ConcurrentLinkedQueue<Object> outBoundMessages;
+    ConcurrentLinkedQueue<Object> incomingMessages;
     String ip;
 
-    public SocketReceiving(Socket receiving,ConcurrentLinkedQueue<TransactionMessage> incomingTransactions, ConcurrentLinkedQueue<BlockMessage> incomingBlocks,
-                           ConcurrentLinkedQueue<BlockListRequest> blockRequest, ConcurrentLinkedQueue<PeerListRequest> peerRequests,
-                           ConcurrentLinkedQueue<LatestBlockNumber> numberRequest) {
+    public SocketReceiving(Socket receiving, ConcurrentLinkedQueue<Object> outBoundMessages, ConcurrentLinkedQueue<Object> incomingMessages) {
         this.receiving = receiving;
-        this.incomingTransactions = incomingTransactions;
-        this.incomingBlocks = incomingBlocks;
-        this.blockRequest = blockRequest;
-        this.peerListRequest = peerRequests;
-        this.latestBlockNumberRequest = numberRequest;
+        this.outBoundMessages = outBoundMessages;
+        this.incomingMessages = incomingMessages;
     }
 
     @Override
@@ -49,16 +38,16 @@ public class SocketReceiving implements Runnable {
 
                 if (object instanceof BlockListRequest) {
                     BlockListRequest request = (BlockListRequest) object;
-                    blockRequest.add(request);
+                    outBoundMessages.add(request);
                 }
                 if (object instanceof PeerListRequest) {
                     PeerListRequest request = (PeerListRequest) object;
-                    peerListRequest.add(request);
+                    outBoundMessages.add(request);
                 }
                 if (object instanceof LatestBlockNumber) {
                     LatestBlockNumber latestNumber = (LatestBlockNumber) object;
                     if (latestNumber.getIsRequest()) {
-                        latestBlockNumberRequest.add(latestNumber);
+                        outBoundMessages.add(latestNumber);
                     } else {
                         int start = Ledger.getInstance().getLatestBlock().blockNumber + 1;
                         BlockListRequest request = new BlockListRequest(start, latestNumber.getLatestBlockNumber(), false, ip);
@@ -67,15 +56,16 @@ public class SocketReceiving implements Runnable {
                     }
                 }
                 if (object instanceof BlockMessage) {
-                    incomingBlocks.add((BlockMessage) object);
+                    incomingMessages.add((BlockMessage) object);
+                    outBoundMessages.add((BlockMessage) object);
                 }
                 if (object instanceof TransactionMessage) {
-                    incomingTransactions.add((TransactionMessage) object);
+                    incomingMessages.add((TransactionMessage) object);
+                    outBoundMessages.add((TransactionMessage) object);
                 }
                 if (object instanceof PeerMessage) {
                     PeerMessage message = (PeerMessage) object;
                     SocketHandler.peers.addAll(message.getPeers());
-
                 }
             }
         } catch (IOException | ClassNotFoundException e) {

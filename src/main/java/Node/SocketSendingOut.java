@@ -14,27 +14,12 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class SocketSendingOut implements Runnable{
     Socket socketOut;
-    ConcurrentLinkedQueue<BlockMessage> blocksToOtherNodes;
-    ConcurrentLinkedQueue<TransactionMessage> transactionsToOtherNodes;
-    ConcurrentLinkedQueue<BlockListRequest> blockRequests;
-    ConcurrentLinkedQueue<PeerListRequest> peerRequests;
-    ConcurrentLinkedQueue<LatestBlockNumber> latestNumber;
+    ConcurrentLinkedQueue<Object> outBoundMessages;
     String ip;
 
-    public SocketSendingOut(Socket outBound, ConcurrentLinkedQueue<BlockListRequest> blockRequests, ConcurrentLinkedQueue<PeerListRequest> peerRequests,
-                            ConcurrentLinkedQueue<LatestBlockNumber> latestNumber) {
+    public SocketSendingOut(Socket outBound, ConcurrentLinkedQueue<Object> outBoundMessages) {
         this.socketOut = outBound;
-        this.blockRequests = blockRequests;
-        this.peerRequests = peerRequests;
-        this.latestNumber = latestNumber;
-    }
-
-    public void setBlocksToOtherNodes(ConcurrentLinkedQueue<BlockMessage> blocksToOtherNodes) {
-        this.blocksToOtherNodes = blocksToOtherNodes;
-    }
-
-    public void setTransactionsToOtherNodes(ConcurrentLinkedQueue<TransactionMessage> transactionsToOtherNodes) {
-        this.transactionsToOtherNodes = transactionsToOtherNodes;
+        this.outBoundMessages = outBoundMessages;
     }
 
     @Override
@@ -48,42 +33,49 @@ public class SocketSendingOut implements Runnable{
             LatestBlockNumber startUpRequest = new LatestBlockNumber(true);
             outBound.writeObject(startUpRequest);
             while (true) {
-                if (!latestNumber.isEmpty()) {
-                    LatestBlockNumber request = latestNumber.poll();
-                    int latest = Ledger.getInstance().getLatestBlock().blockNumber;
-                    request.setLatestBlockNumber(latest);
-                    request.setIsRequest(false);
-                    outBound.writeObject(request);
-                }
-                if (!blockRequests.isEmpty()) {
-                    BlockListRequest request = blockRequests.poll();
-                    if (request.isRequest()) {
-                        List<Block> blockList = Ledger.getInstance().blockListStartAndEnd(request.start, request.end);
-                        BlockMessage message = new BlockMessage(blockList, ip);
-                        outBound.writeObject(message);
-                    } else {
-                        request.setRequest(true);
+                if (!outBoundMessages.isEmpty()) {
+                    Object object = outBoundMessages.poll();
+                    if ( object instanceof LatestBlockNumber){
+                        LatestBlockNumber request = (LatestBlockNumber) object;
+                        int latest = Ledger.getInstance().getLatestBlock().blockNumber;
+                        request.setLatestBlockNumber(latest);
+                        request.setIsRequest(false);
                         outBound.writeObject(request);
+                        continue;
                     }
-                }
-                if (!peerRequests.isEmpty()) {
-                   int amountOfPeers = peerRequests.poll().amountOfPeers;
-                   List<Peer> requestedPeers = SocketHandler.readTopNPeers(amountOfPeers);
 
-                   PeerMessage peerMessage = new PeerMessage(requestedPeers, ip);
-                   outBound.writeObject(peerMessage);
-                }
+                    if (object instanceof BlockListRequest) {
+                        BlockListRequest request = (BlockListRequest) object;
+                        if (request.isRequest()) {
+                            List<Block> blockList = Ledger.getInstance().blockListStartAndEnd(request.start, request.end);
+                            BlockMessage message = new BlockMessage(blockList, ip);
+                            outBound.writeObject(message);
+                        } else {
+                            request.setRequest(true);
+                            outBound.writeObject(request);
+                        }
+                        continue;
+                    }
+                    if (object instanceof PeerListRequest) {
+                        PeerListRequest amountOfPeers = (PeerListRequest) object;
+                        List<Peer> requestedPeers = SocketHandler.readTopNPeers(amountOfPeers.amountOfPeers);
 
-                if (!blocksToOtherNodes.isEmpty()) {
-                    BlockMessage blockMessage = blocksToOtherNodes.poll();
-                    blockMessage.setIp(ip);
-                    outBound.writeObject(blockMessage);
-                }
-                if(!transactionsToOtherNodes.isEmpty()) {
-                    TransactionMessage message = transactionsToOtherNodes.poll();
-                    message.setIp(ip);
-                    outBound.writeObject(message);
+                        PeerMessage peerMessage = new PeerMessage(requestedPeers, ip);
+                        outBound.writeObject(peerMessage);
+                        continue;
+                    }
 
+                    if (object instanceof BlockMessage) {
+                        BlockMessage blockMessage = (BlockMessage) object;
+                        blockMessage.setIp(ip);
+                        outBound.writeObject(blockMessage);
+                        continue;
+                    }
+                    if (object instanceof TransactionMessage) {
+                        TransactionMessage message = (TransactionMessage) object;
+                        message.setIp(ip);
+                        outBound.writeObject(message);
+                    }
                 }
 
 
