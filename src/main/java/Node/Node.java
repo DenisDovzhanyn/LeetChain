@@ -95,12 +95,12 @@ public class Node implements Runnable{
     }
 
     public boolean verifyIncomingBlock(Block block){
-        if (!verifyBlockHash(block)) return false;
-        if (!verifyPreviousHash(block)) return false;
-        if (!verifyMerkleRoot(block)) return false;
-        if (!addOrUpdateTransactions(block)) return false;
-
-        return true;
+        return (
+            verifyBlockHash(block) &&
+            verifyPreviousHash(block) &&
+            verifyMerkleRoot(block) &&
+            addOrUpdateTransactions(block)
+        );
     }
 
     public boolean verifyIncomingTransaction(Transaction transaction) {
