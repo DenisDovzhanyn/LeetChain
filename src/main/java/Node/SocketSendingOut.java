@@ -35,6 +35,7 @@ public class SocketSendingOut implements Runnable{
             while (true) {
                 if (!outBoundMessages.isEmpty()) {
                     Object object = outBoundMessages.poll();
+
                     if ( object instanceof LatestBlockNumber){
                         LatestBlockNumber request = (LatestBlockNumber) object;
                         int latest = Ledger.getInstance().getLatestBlock().blockNumber;

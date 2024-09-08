@@ -62,6 +62,8 @@ public class Node implements Runnable{
                 Object object = incomingMessage.poll();
                 // notify miner before or after a new block is verified? how long will verification take ? will people try to take advantage of this
                 // and send faulty blocks to set miners back and interrupt their mining?
+                // WE NEED TO CREATE A SEPERATE LIST, WE WILL PULL THE BLOCK FROM THE QUEUE IF ITS A BLOCK AND IF IT DOESNT HAVE THE NEXT BLOCKS IN THE CORRECT ORDER
+                // LIKE A THE MINER IS ON BLOCK 50 AND THEY SEND 55-60 WE NEED TO STORE IT UNTIL WE RECEIVE THE NEXT VALID BLOCKS
                 if (object instanceof BlockMessage) {
                     BlockMessage message = (BlockMessage) object;
                     int peersIndexInList = SocketHandler.findPeerIndexByIp(message.getIp());
