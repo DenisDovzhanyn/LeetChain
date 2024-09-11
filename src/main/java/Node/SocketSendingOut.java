@@ -30,17 +30,20 @@ public class SocketSendingOut implements Runnable{
 
             // on start up will create a single request and send it out, we will need to somehow pool together all the
             // highest block numbers we get back then get either the most common number OR highest number
-            LatestBlockNumber startUpRequest = new LatestBlockNumber(true);
-            outBound.writeObject(startUpRequest);
             while (true) {
                 if (!outBoundMessages.isEmpty()) {
                     Object object = outBoundMessages.poll();
 
                     if ( object instanceof LatestBlockNumber){
                         LatestBlockNumber request = (LatestBlockNumber) object;
-                        int latest = Ledger.getInstance().getLatestBlock().blockNumber;
-                        request.setLatestBlockNumber(latest);
-                        request.setIsRequest(false);
+
+                        if (request.getIsRequest()) {
+                            int latest = Ledger.getInstance().getLatestBlock().blockNumber;
+                            request.setLatestBlockNumber(latest);
+                            request.setIsRequest(false);
+                        } else {
+                            request.setIsRequest(true);
+                        }
                         outBound.writeObject(request);
                         continue;
                     }
@@ -82,7 +85,7 @@ public class SocketSendingOut implements Runnable{
 
             }
         } catch (IOException e) {
-            throw new RuntimeException("Connection terminated");
+            System.out.println("Connection terminated closing thread");
         }
     }
 

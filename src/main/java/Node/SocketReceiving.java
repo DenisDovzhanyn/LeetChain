@@ -32,34 +32,37 @@ public class SocketReceiving implements Runnable {
     @Override
     public void run() {
         Consumer<Object> routeGenericMessage = (Object x) -> outBoundMessages.add(x);
+
         Consumer<Object> routeGenericMessageOutboundInbound = (Object x) -> {
             outBoundMessages.add(x);
             incomingMessages.add(x);
         };
+
         Consumer<Object> routeLatestBlockNumberMessage = (Object x) -> {
             LatestBlockNumber latestNumber = (LatestBlockNumber) x;
             if (latestNumber.getIsRequest()) {
                 outBoundMessages.add(latestNumber);
             } else {
-                int start = Ledger.getInstance().getLatestBlock().blockNumber + 1;
-                BlockListRequest request = new BlockListRequest(start, latestNumber.getLatestBlockNumber(), false, ip);
+                incomingMessages.add(latestNumber);
                 // if its not a request, then we want to ask MULTIPLE connected people for a certain range of blocks, but How do I send it back up
                 // and split it amongst multiple sockets?
             }
         };
 
+        Map<Class, Consumer<Object>> messageRouter = Map.ofEntries(
+                entry(BlockListRequest.class, routeGenericMessage),
+                entry(PeerListRequest.class, routeGenericMessage),
+                entry(BlockMessage.class, routeGenericMessageOutboundInbound),
+                entry(TransactionMessage.class, routeGenericMessageOutboundInbound),
+                entry(PeerMessage.class, (Object x) -> SocketHandler.peers.addAll(((PeerMessage) x).getPeers())),
+                entry(LatestBlockNumber.class, routeLatestBlockNumberMessage)
+        );
+
         try {
             ip = InetAddress.getLocalHost().getHostAddress();
 
             ObjectInputStream inputStream = new ObjectInputStream(receiving.getInputStream());
-            Map<Class, Consumer<Object>> messageRouter = Map.ofEntries(
-                    entry(BlockListRequest.class, routeGenericMessage),
-                    entry(PeerListRequest.class, routeGenericMessage),
-                    entry(BlockMessage.class, routeGenericMessageOutboundInbound),
-                    entry(TransactionMessage.class, routeGenericMessageOutboundInbound),
-                    entry(PeerMessage.class, (Object x) -> SocketHandler.peers.addAll(((PeerMessage) x).getPeers())),
-                    entry(LatestBlockNumber.class, routeLatestBlockNumberMessage)
-            );
+
             while (true) {
                 Object message = inputStream.readObject();
                 if (message == null) continue;

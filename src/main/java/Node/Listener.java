@@ -1,10 +1,6 @@
 package Node;
 
-import Miner.Block;
-import Node.MessageTypes.BlockListRequest;
-import Node.MessageTypes.BlockMessage;
 import Node.MessageTypes.LatestBlockNumber;
-import Node.MessageTypes.TransactionMessage;
 
 import java.net.Socket;
 import java.util.*;
@@ -33,32 +29,52 @@ public class Listener implements Runnable{
     @Override
     public void run() {
         sockets = (ThreadPoolExecutor) Executors.newFixedThreadPool(60);
+        long startTime = System.currentTimeMillis();
+        long thirtySeconds = 30000;
+        boolean trueOnlyOnceSendRequest = true;
+        boolean trueOnlyOnceSortLatestBlockNumber = true;
+        List<Object> waitingToBeSentToQueue = new ArrayList<>();
+        List<Integer> blockNumbers = new ArrayList<>();
         while (true) {
             if (!newlyConnectedSockets.isEmpty()) {
                 assignPersonalQueues();
             }
+            // wait for 30 seconds to get some connections
+            if (startTime - System.currentTimeMillis() > thirtySeconds && trueOnlyOnceSendRequest) {
+                trueOnlyOnceSendRequest = false;
+                LatestBlockNumber startUpRequest = new LatestBlockNumber(false);
+                addToPersonalQueues();
+            }
+
             if (!outBoundMessages.isEmpty()) {
                 addToPersonalQueues();
             }
 
-            List<Integer> blockNumbers = new ArrayList<>();
+
             while (!inBoundMessages.isEmpty()) {
                 Object object = inBoundMessages.poll();
 
-                if (object instanceof LatestBlockNumber) {
-                    LatestBlockNumber latest = (LatestBlockNumber) object;
-                    blockNumbers.add(latest.getLatestBlockNumber());
-                } else {
+                // once we waited 30 seconds and we reassigned startTime, we wait another 30 seconds but during this time
+                // we filter out objects that arent latestblocknumbers
+                if (startTime - System.currentTimeMillis() < thirtySeconds + thirtySeconds && trueOnlyOnceSortLatestBlockNumber) {
+
+                    if (object instanceof LatestBlockNumber){
+                        blockNumbers.add(((LatestBlockNumber) object).getLatestBlockNumber());
+                    } else {
+                        waitingToBeSentToQueue.add(object);
+                    }
+                } else if (startTime - System.currentTimeMillis() > thirtySeconds + thirtySeconds && trueOnlyOnceSortLatestBlockNumber) {
+                    int blockHighestBlockNumber = Collections.max(blockNumbers);
+
+                    // now we will need to split the ranges somewhere here so we can ask nodes for different blocks
+
+                    trueOnlyOnceSortLatestBlockNumber = false;
+                } else if (!trueOnlyOnceSendRequest) {
+                    if (!waitingToBeSentToQueue.isEmpty()) inBoundMessagesToNode.addAll(waitingToBeSentToQueue);
+
                     inBoundMessagesToNode.add(object);
                 }
 
-                // this may not work but my reasoning is that we might not get all the requests back instantly
-                // so we wait 100ms every iteration just incase someone sends their request back a little late
-                try {
-                    wait(100);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
             }
 
             if (!blockNumbers.isEmpty()) {
