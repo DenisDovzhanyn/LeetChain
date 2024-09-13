@@ -56,6 +56,7 @@ public class SocketSendingOut implements Runnable{
                             outBound.writeObject(message);
                         } else {
                             request.setRequest(true);
+                            request.setIp(ip);
                             outBound.writeObject(request);
                         }
                         continue;
