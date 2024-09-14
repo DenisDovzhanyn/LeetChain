@@ -9,6 +9,9 @@ import Wallet.Transaction;
 import Wallet.TransactionType;
 
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -54,6 +57,7 @@ public class Node implements Runnable{
     // how will we notify miner when a new block comes in and how will he access its data for the next block?
     @Override
     public void run() {
+        List<Block> blocksNotAbleToBeVerifiedYet = new ArrayList<>();
         while (true) {
             if(!blocksToOtherNodes.isEmpty()) {
                 outBoundMessage.add(blocksToOtherNodes.poll());
@@ -66,19 +70,36 @@ public class Node implements Runnable{
                 // LIKE A THE MINER IS ON BLOCK 50 AND THEY SEND 55-60 WE NEED TO STORE IT UNTIL WE RECEIVE THE NEXT VALID BLOCKS
                 if (object instanceof BlockMessage) {
                     BlockMessage message = (BlockMessage) object;
-                    int peersIndexInList = SocketHandler.findPeerIndexByIp(message.getIp());
+                    if (message.getBlocks().get(0).blockNumber == Ledger.getInstance().getLatestBlock().blockNumber + 1) {
+                        int peersIndexInList = SocketHandler.findPeerIndexByIp(message.getIp());
 
-                    for (Block x : message.getBlocks()) {
-                        if (verifyIncomingBlock(x)) {
-                            Ledger.getInstance().addBlock(x, x.hash);
-                            BlockChain.nodeAdd(x);
-                            // we want to send this out to other people we are connected to but how do we stop it from sending it back to the
-                            // person who sent us the block originally?
-                            outBoundMessage.add(x);
-                            SocketHandler.peers.get(peersIndexInList).raiseScoreByOne();
-                        } else {
-                            SocketHandler.peers.get(peersIndexInList).lowerScoreByOne();
+                        for (Block x : message.getBlocks()) {
+                            if (verifyIncomingBlock(x)) {
+                                Ledger.getInstance().addBlock(x, x.hash);
+                                BlockChain.nodeAdd(x);
+                                // we want to send this out to other people we are connected to but how do we stop it from sending it back to the
+                                // person who sent us the block originally?
+                                outBoundMessage.add(x);
+                                SocketHandler.peers.get(peersIndexInList).raiseScoreByOne();
+                            } else {
+                                SocketHandler.peers.get(peersIndexInList).lowerScoreByOne();
+                            }
                         }
+                    } else {
+                        blocksNotAbleToBeVerifiedYet.addAll(message.getBlocks());
+                    }
+                }
+
+            }
+
+            if (!blocksNotAbleToBeVerifiedYet.isEmpty()) {
+                blocksNotAbleToBeVerifiedYet.sort(Comparator.comparingInt(Block::getBlockNumber));
+
+                if (blocksNotAbleToBeVerifiedYet.get(0).getBlockNumber() == Ledger.getInstance().getLatestBlock().getBlockNumber() + 1) {
+                    for (Block x : blocksNotAbleToBeVerifiedYet) {
+                        if (x.getBlockNumber() != Ledger.getInstance().getLatestBlock().getBlockNumber() + 1) break;
+                        // very stupid doing this i guess but i dont want to rewrite code for verifying block
+                        incomingMessage.add(x);
                     }
                 }
             }

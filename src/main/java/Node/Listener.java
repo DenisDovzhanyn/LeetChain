@@ -1,6 +1,8 @@
 package Node;
 
+import Miner.Block;
 import Node.MessageTypes.BlockListRequest;
+import Node.MessageTypes.BlockMessage;
 import Node.MessageTypes.LatestBlockNumber;
 
 import java.net.Socket;
@@ -75,9 +77,10 @@ public class Listener implements Runnable{
                     int startingBlock = lowestBlockToAskFor;
                     int endBlock = amountOfBlocksEachNodeWillAskFor;
                     for (ConcurrentLinkedQueue<Object> x : receivingSocketsToOutboundSockets) {
-                        if (endBlock > blockHighestBlockNumber) return;
-                        BlockListRequest request = new BlockListRequest(startingBlock, endBlock, false, "not set yet");
-                        x.add(request);
+                        if (endBlock > blockHighestBlockNumber) break;
+                        List<Block> blocks = Ledger.getInstance().blockListStartAndEnd(startingBlock, endBlock);
+                        BlockMessage message = new BlockMessage(blocks, "ip not set yet");
+                        x.add(message);
 
                         startingBlock = endBlock + 1;
                         endBlock += amountOfBlocksEachNodeWillAskFor;
@@ -92,14 +95,6 @@ public class Listener implements Runnable{
 
             }
 
-            if (!blockNumbers.isEmpty()) {
-                // sort from largest to smallest
-                blockNumbers.sort(Comparator.reverseOrder());
-                // we can get the highest latest block number but maybe it will be safer if we compare the 2 highest numbers and make sure they match?
-                int highest = blockNumbers.get(0);
-
-                // then we want to split up the blocks we want so we ask multiple nodes for different ranges of blocks
-            }
         }
     }
 

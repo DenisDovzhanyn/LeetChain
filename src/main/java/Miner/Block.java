@@ -92,6 +92,34 @@ public class Block implements Serializable {
         this.difficulty = difficulty;
     }
 
+    public String getHash() {
+        return hash;
+    }
+
+    public String getPreviousHash() {
+        return previousHash;
+    }
+
+    public String getMerkleRoot() {
+        return merkleRoot;
+    }
+
+    public List<Transaction> getTransactionlist() {
+        return transactionlist;
+    }
+
+    public int getNonce() {
+        return nonce;
+    }
+
+    public int getBlockNumber() {
+        return blockNumber;
+    }
+
+    public BigInteger getCurrentHashValue() {
+        return currentHashValue;
+    }
+
     public int getDifficulty() {
         return difficulty;
     }
