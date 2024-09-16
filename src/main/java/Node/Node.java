@@ -88,6 +88,9 @@ public class Node implements Runnable{
                     } else {
                         blocksNotAbleToBeVerifiedYet.addAll(message.getBlocks());
                     }
+                } else if (object instanceof TransactionMessage) {
+                    TransactionMessage transactionMessage = (TransactionMessage) object;
+                    incomingTransaction.add(transactionMessage.getTransaction());
                 }
 
             }
@@ -99,6 +102,7 @@ public class Node implements Runnable{
                     if (x.getBlockNumber() != Ledger.getInstance().getLatestBlock().getBlockNumber() + 1) break;
                     // very stupid doing this i guess but i dont want to rewrite code for verifying block
                     incomingMessage.add(x);
+                    blocksNotAbleToBeVerifiedYet.remove(x);
                 }
             }
             if(!incomingTransaction.isEmpty()) {
