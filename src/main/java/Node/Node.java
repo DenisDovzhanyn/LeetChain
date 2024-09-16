@@ -95,16 +95,14 @@ public class Node implements Runnable{
             if (!blocksNotAbleToBeVerifiedYet.isEmpty()) {
                 blocksNotAbleToBeVerifiedYet.sort(Comparator.comparingInt(Block::getBlockNumber));
 
-                if (blocksNotAbleToBeVerifiedYet.get(0).getBlockNumber() == Ledger.getInstance().getLatestBlock().getBlockNumber() + 1) {
-                    for (Block x : blocksNotAbleToBeVerifiedYet) {
-                        if (x.getBlockNumber() != Ledger.getInstance().getLatestBlock().getBlockNumber() + 1) break;
-                        // very stupid doing this i guess but i dont want to rewrite code for verifying block
-                        incomingMessage.add(x);
-                    }
+                for (Block x : blocksNotAbleToBeVerifiedYet) {
+                    if (x.getBlockNumber() != Ledger.getInstance().getLatestBlock().getBlockNumber() + 1) break;
+                    // very stupid doing this i guess but i dont want to rewrite code for verifying block
+                    incomingMessage.add(x);
                 }
             }
             if(!incomingTransaction.isEmpty()) {
-                TransactionMessage transaction = new TransactionMessage(transactionsToMiner.poll(), "ip not inputted yet");
+                TransactionMessage transaction = new TransactionMessage(incomingTransaction.poll(), "ip not inputted yet");
                 if (verifyIncomingTransaction(transaction.getTransaction())) {
                     transactionsToOtherNodes.add(transaction);
                     transactionsToMiner.add(transaction.getTransaction());
