@@ -38,10 +38,10 @@ public class SocketHandler implements Runnable{
                     socketsToListener.add(socket);
                 }
             }
-
+            server = new ServerSocket(6478);
             while (Listener.sockets.getPoolSize() < 60) {
-                // i dont think i should be making a new server socket every iteration whoops
-                server = new ServerSocket(6478);
+
+
                 Socket socket = server.accept();
                 checkSocketForPreviousConnection(socket.getRemoteSocketAddress().toString());
 

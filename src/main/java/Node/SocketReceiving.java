@@ -69,12 +69,6 @@ public class SocketReceiving implements Runnable {
 
                 Consumer<Object> route = messageRouter.get(message.getClass());
                 route.accept(message);
-
-                // from testing in a different repository, when an object is received and then the connection closes
-                // this will throw an error " connnection reset", upon getting this error we should close this thread ( including the sending out thread aswell )
-                // how will we handle this exception and close this thread ??????
-                // even so if we throw an exception to close this thread, how will we close the sending out thread?
-                // Should I just let it die on its own when it tries to send out info?
             }
         } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException("object not formatted correctly or connection terminated");

@@ -3,6 +3,7 @@ package Node;
 import Miner.Block;
 import Miner.BlockChain;
 import Node.MessageTypes.BlockMessage;
+import Node.MessageTypes.LatestBlockNumber;
 import Node.MessageTypes.TransactionMessage;
 import Utilities.Util;
 import Wallet.Transaction;
@@ -58,16 +59,16 @@ public class Node implements Runnable{
     @Override
     public void run() {
         List<Block> blocksNotAbleToBeVerifiedYet = new ArrayList<>();
+        boolean startUp = false;
+        int latestBlockNumber = Integer.MAX_VALUE;
         while (true) {
             if(!blocksToOtherNodes.isEmpty()) {
                 outBoundMessage.add(blocksToOtherNodes.poll());
             }
             if(!incomingMessage.isEmpty()) {
                 Object object = incomingMessage.poll();
-                // notify miner before or after a new block is verified? how long will verification take ? will people try to take advantage of this
-                // and send faulty blocks to set miners back and interrupt their mining?
-                // WE NEED TO CREATE A SEPERATE LIST, WE WILL PULL THE BLOCK FROM THE QUEUE IF ITS A BLOCK AND IF IT DOESNT HAVE THE NEXT BLOCKS IN THE CORRECT ORDER
-                // LIKE A THE MINER IS ON BLOCK 50 AND THEY SEND 55-60 WE NEED TO STORE IT UNTIL WE RECEIVE THE NEXT VALID BLOCKS
+                // when should i send another blocklistrequest if one of my connected nodes fails to send me some that i have previously requested?
+                // we need the node to wait until we have latest block
                 if (object instanceof BlockMessage) {
                     BlockMessage message = (BlockMessage) object;
                     if (message.getBlocks().get(0).blockNumber == Ledger.getInstance().getLatestBlock().blockNumber + 1) {
@@ -77,8 +78,7 @@ public class Node implements Runnable{
                             if (verifyIncomingBlock(x)) {
                                 Ledger.getInstance().addBlock(x, x.hash);
                                 BlockChain.nodeAdd(x);
-                                // we want to send this out to other people we are connected to but how do we stop it from sending it back to the
-                                // person who sent us the block originally?
+
                                 outBoundMessage.add(x);
                                 SocketHandler.peers.get(peersIndexInList).raiseScoreByOne();
                             } else {
@@ -88,9 +88,14 @@ public class Node implements Runnable{
                     } else {
                         blocksNotAbleToBeVerifiedYet.addAll(message.getBlocks());
                     }
-                } else if (object instanceof TransactionMessage) {
-                    TransactionMessage transactionMessage = (TransactionMessage) object;
-                    incomingTransaction.add(transactionMessage.getTransaction());
+                } else if (object instanceof LatestBlockNumber && !startUp) {// use startup boolean here so people cant send latestblocknumbers and block our entire program
+                    latestBlockNumber = ((LatestBlockNumber) object).getLatestBlockNumber();
+                    startUp = true;
+                } else if (Ledger.getInstance().getLatestBlock().blockNumber >= latestBlockNumber) {
+                    if (object instanceof TransactionMessage) {
+                        TransactionMessage transactionMessage = (TransactionMessage) object;
+                        incomingTransaction.add(transactionMessage.getTransaction());
+                    }
                 }
 
             }
