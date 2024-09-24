@@ -32,4 +32,4 @@ Multi-threading is integrated to enhance the functionality and efficiency of Lee
 By employing multi-threading, LeetChain achieves:
 
 - **Improved Performance**: Simultaneous processing of node activities, mining, and wallet operations ensures that the blockchain network remains responsive and efficient.
-- **Enhanced Scalability**: With independent threads for different tasks, the system can better handle increased loads and scale as needed.
+- **Enhanced Scalability**: With independent threads for different tasks, the system can better handle increased loads and scale as needed..
