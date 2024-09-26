@@ -3,6 +3,8 @@ package Wallet;
 import java.io.Serializable;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.util.List;
+
 import Utilities.Util;
 
 public class TransactionOutput implements Serializable {
@@ -23,9 +25,7 @@ public class TransactionOutput implements Serializable {
         signature = Util.applySignature(key, Id);
     }
 
-
-
-    public boolean verifySignature(PublicKey sender, String transactionId, byte[] signature) {
+    public static boolean verifySignature(PublicKey sender, String transactionId, byte[] signature) {
         return Util.verifySignature(sender, transactionId, signature);
     }
 

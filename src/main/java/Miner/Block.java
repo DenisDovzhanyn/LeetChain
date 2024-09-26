@@ -24,19 +24,19 @@ public class Block implements Serializable {
     public Block(String previousHash, int blockNumber, int difficulty, List<Transaction> transactionlist){
         this.previousHash = previousHash;
         this.timeStamp = new Date().getTime();
-        this.hash = calHash();
         this.blockNumber = blockNumber;
         this.difficulty = difficulty;
         this.transactionlist = transactionlist;
         this.merkleRoot = Util.getMerkleRoot(transactionlist, (Transaction x) -> x.id);
+        this.hash = calHash();
     }
 
     public Block(String previousHash, int blockNumber, int difficulty){
         this.previousHash = previousHash;
         this.timeStamp = new Date().getTime();
-        this.hash = calHash();
         this.blockNumber = blockNumber;
         this.difficulty = difficulty;
+        this.hash = calHash();
     }
 
     public Block(){
@@ -86,6 +86,38 @@ public class Block implements Serializable {
 
     public long getTimeStamp() {
         return timeStamp;
+    }
+
+    public void setDifficulty(int difficulty) {
+        this.difficulty = difficulty;
+    }
+
+    public String getHash() {
+        return hash;
+    }
+
+    public String getPreviousHash() {
+        return previousHash;
+    }
+
+    public String getMerkleRoot() {
+        return merkleRoot;
+    }
+
+    public List<Transaction> getTransactionlist() {
+        return transactionlist;
+    }
+
+    public int getNonce() {
+        return nonce;
+    }
+
+    public int getBlockNumber() {
+        return blockNumber;
+    }
+
+    public BigInteger getCurrentHashValue() {
+        return currentHashValue;
     }
 
     public int getDifficulty() {

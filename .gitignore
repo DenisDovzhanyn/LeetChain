@@ -35,3 +35,5 @@ bin/
 /.idea/
 /keyAndTransactionDatabase/
 /BlockDataBase/
+/LeetChain.iml
+

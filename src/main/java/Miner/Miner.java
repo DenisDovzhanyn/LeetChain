@@ -13,20 +13,23 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Miner implements Runnable {
     ConcurrentLinkedQueue<Transaction> transactionsToMiner;
+    ConcurrentLinkedQueue<Block> blocksToNode;
     List<Transaction> transactionList;
     PublicKey minersKey;
+    BlockChain chain;
 
-    public Miner (ConcurrentLinkedQueue<Transaction> toMiner, PublicKey minersKey) {
+    public Miner (ConcurrentLinkedQueue<Transaction> toMiner, ConcurrentLinkedQueue<Block> blocksToNode, PublicKey minersKey) {
         transactionsToMiner = toMiner;
+        this.blocksToNode = blocksToNode;
         this.minersKey = minersKey;
     }
 
     @Override
     public void run() {
-        BlockChain chain = new BlockChain();
+         chain = new BlockChain();
 
         if (chain.getBlockChain().isEmpty()) {
-            Block block = new Block("0", 1, 50000000);
+            Block block = new Block("0", 1, 100000); //50000000
             mineBlock(block);
             chain.add(block);
         }
@@ -35,44 +38,49 @@ public class Miner implements Runnable {
             Block block;
             setListOfTransactions();
             // creating reward for miner doing this for testing
-            Transaction reward = new Transaction(TransactionType.COINBASE);
-            reward.addUTXOs(Block.calculateReward(chain.getPrevious().blockNumber + 1) + scrapeFees(),0, minersKey, minersKey);
-            reward.outputs.get(0).applySig(Wallet.getPrivateFromPublic(minersKey));
+            Transaction reward = createReward();
             transactionList.add(reward);
 
             block = new Block(chain.getPrevious().hash, chain.getPrevious().blockNumber + 1, chain.calculateDifficulty(), transactionList);
 
             mineBlock(block);
-            chain.add(block);
-
-
+            if (block.blockNumber == chain.getPrevious().blockNumber + 1) {
+                chain.add(block);
+            }
         }
-
-
     }
 
 
     public void mineBlock(Block block) {
         System.out.println("mining block at index: " + block.blockNumber + ", at difficulty: " + block.getDifficulty() + "... ");
-        while (!block.isHashFound(block.currentHashValue)) {
+        while (!block.isHashFound(block.currentHashValue) && chain.getPrevious().blockNumber + 1 == block.blockNumber ) {
             block.mineBlock();
            // System.out.print(block.hash + "\r");
-
         }
         System.out.println("Nice you've mined a block: " + block.hash);
+        blocksToNode.add(block);
 //        System.out.println("And you earned " + block.transactionlist.get(0).outputs.get(0).value + " LeetCoins!!!");
     }
 
-    public double scrapeFees() {
+    public static double scrapeFees(List<Transaction> transactions) {
         double totalFeesCollected = 0;
 
-        for (Transaction x : transactionList) {
-            double inputtedAmount = x.inputs.stream().mapToDouble(y -> y.value).sum();
-            double outPuttedAmount = x.outputs.stream().mapToDouble(z -> z.value).sum();
+        for (Transaction x : transactions) {
+            double inputtedAmount = x.inputs
+                    .stream()
+                    .mapToDouble(y -> y.value)
+                    .sum();
+            double outPuttedAmount = x.outputs
+                    .stream()
+                    .mapToDouble(z -> z.value)
+                    .sum();
 
+            if (inputtedAmount < outPuttedAmount) {
+                transactions.remove(x);
+                continue;
+            }
             totalFeesCollected += inputtedAmount - outPuttedAmount;
         }
-
         return totalFeesCollected;
     }
 
@@ -85,6 +93,16 @@ public class Miner implements Runnable {
                 transactionList.add(transactionsToMiner.poll());
             }
         }
+    }
+
+    public Transaction createReward() {
+        Transaction reward = new Transaction(TransactionType.COINBASE);
+        reward.addUTXOs(Block.calculateReward(chain.getPrevious().blockNumber + 1) + scrapeFees(transactionList),0, minersKey, minersKey);
+        reward.inputs.get(0).applySig(Wallet.getPrivateFromPublic(minersKey));
+        reward.outputs.get(0).applySig(Wallet.getPrivateFromPublic(minersKey));
+        reward.id = reward.calculateID();
+
+        return reward;
     }
 
 }
